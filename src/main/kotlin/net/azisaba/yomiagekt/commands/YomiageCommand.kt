@@ -57,7 +57,7 @@ object YomiageCommand : CommandHandler {
         }
         if (interaction.optSubcommand("credit") != null) {
             val state = YomiageStateStore[guild.id]
-            if (state != null) {
+            if (state != null && state.textChannelId == interaction.channelId) {
                 interaction.respondEphemeral {
                     content = "読み上げに使用したキャラクターのクレジット表記:\n" +
                             state.usedCharacters.joinToString("\n") { it.credit }
@@ -92,6 +92,15 @@ object YomiageCommand : CommandHandler {
         if (interaction.optSubcommand("voice-list") != null) {
             interaction.respondEphemeral {
                 content = "利用可能なキャラクター:\n${Characters.values().joinToString("\n") { "`${it.characterName}`" }}"
+            }
+        }
+        if (interaction.optSubcommand("skip") != null) {
+            val state = YomiageStateStore[guild.id]
+            if (state != null && state.textChannelId == interaction.channelId) {
+                state.stopTrack()
+                interaction.respondPublic { content = "現在再生中の読み上げをスキップしました。" }
+            } else {
+                interaction.respondEphemeral { content = "読み上げ中のセッションがありません。" }
             }
         }
     }
@@ -142,6 +151,7 @@ object YomiageCommand : CommandHandler {
                 }
             }
             subCommand("voice-list", "利用可能な話し手を表示します")
+            subCommand("skip", "現在再生してる読み上げをスキップします")
         }
     }
 }
