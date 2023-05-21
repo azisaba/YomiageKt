@@ -15,6 +15,7 @@ import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.voice.AudioProvider
 import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.data.Characters
+import net.azisaba.yomiagekt.data.NsfwType
 import net.azisaba.yomiagekt.data.YomiageState
 import net.azisaba.yomiagekt.data.YomiageStateStore
 import net.azisaba.yomiagekt.util.Util
@@ -26,11 +27,11 @@ object YomiageCommand : CommandHandler {
     override suspend fun handle(interaction: ApplicationCommandInteraction) {
         val guild = interaction.channel.getGuildOrNull()!!
         val member = guild.getMember(interaction.user.id)
+        val state = YomiageStateStore[guild.id]
         if (interaction.optSubcommand("join") != null) {
             join(interaction, guild, member)
         }
         if (interaction.optSubcommand("leave") != null) {
-            val state = YomiageStateStore[guild.id]
             if (state == null) {
                 interaction.respondEphemeral { content = "読み上げ中のセッションがありません。" }
                 return
@@ -48,15 +49,19 @@ object YomiageCommand : CommandHandler {
             }
         }
         if (interaction.optSubcommand("where") != null) {
-            val state = YomiageStateStore[guild.id]
             if (state != null) {
-                interaction.respondEphemeral { content = "下記のチャンネルで読み上げ中です。\nテキストチャンネル: <#${state.textChannelId}>\nボイスチャンネル: <#${state.voiceChannelId}>" }
+                interaction.respondEphemeral {
+                    content = """
+                        下記のチャンネルで読み上げ中です。
+                        テキストチャンネル: <#${state.textChannelId}>
+                        ボイスチャンネル: <#${state.voiceChannelId}>
+                    """.trimIndent()
+                }
             } else {
                 interaction.respondEphemeral { content = "読み上げ中のセッションがありません。" }
             }
         }
         if (interaction.optSubcommand("credit") != null) {
-            val state = YomiageStateStore[guild.id]
             if (state != null && state.textChannelId == interaction.channelId) {
                 interaction.respondEphemeral {
                     content = "読み上げに使用したキャラクターのクレジット表記:\n" +
@@ -81,21 +86,33 @@ object YomiageCommand : CommandHandler {
             userConfig.character = character
             UsersConfig.save()
             interaction.respondEphemeral {
-                content = """
-                    話者を${character.characterName}に設定しました。
-                    キャラクターの説明: ${character.description}
-                    R18利用(年齢制限チャンネル以外は右の表記に関わらず:x:): ${character.nsfwType.description}
-                    利用規約: <${character.terms}>
-                """.trimIndent()
+                content = if (state?.textChannelId == interaction.channelId && state.voiceChannelNsfw) {
+                    """
+                        話者を${character.characterName}に設定しました。
+                        キャラクターの説明: ${character.description}
+                        R18利用: ${character.nsfwType.description} ${if (character.nsfwType == NsfwType.Disallowed) "(このチャンネルでは読み上げされません)" else ""}
+                        利用規約: <${character.terms}>
+                    """.trimIndent()
+                } else {
+                    """
+                        話者を${character.characterName}に設定しました。
+                        キャラクターの説明: ${character.description}
+                        R18利用(年齢制限チャンネル以外は右の表記に関わらず:x:): ${character.nsfwType.description}
+                        利用規約: <${character.terms}>
+                    """.trimIndent()
+                }
             }
         }
         if (interaction.optSubcommand("voice-list") != null) {
             interaction.respondEphemeral {
-                content = "利用可能なキャラクター:\n${Characters.values().joinToString("\n") { "`${it.characterName}`" }}"
+                content = "利用可能なキャラクター:\n" + if (state?.textChannelId == interaction.channelId && state.voiceChannelNsfw) {
+                    Characters.values().filter { it.nsfwType != NsfwType.Disallowed }.joinToString("\n") { "`${it.characterName}`" }
+                } else {
+                    Characters.values().joinToString("\n") { "`${it.characterName}`" }
+                }
             }
         }
         if (interaction.optSubcommand("skip") != null) {
-            val state = YomiageStateStore[guild.id]
             if (state != null && state.textChannelId == interaction.channelId) {
                 state.stopTrack()
                 interaction.respondPublic { content = "現在再生中の読み上げをスキップしました。" }
@@ -127,9 +144,33 @@ object YomiageCommand : CommandHandler {
                     ref.get().provide()
                 }
             }
-            val state = YomiageState(guild.id, interaction.channelId, channel.id, channel.data.nsfw.discordBoolean, connection, ref)
+            val nsfw = channel.data.nsfw.discordBoolean
+            val state = YomiageState(guild.id, interaction.channelId, channel.id, nsfw, connection, ref)
             YomiageStateStore.put(guild.id, state)
-            defer.respond { content = "接続しました。\nテキストチャンネル: <#${interaction.channelId}>\nボイスチャンネル: <#${channel.id}>\n\n※このBotはVOICEVOXを使用して音声を生成しています。利用規約:<https://voicevox.hiroshiba.jp/term/>" }
+            defer.respond {
+                if (nsfw) {
+                    content = """
+                        接続しました。
+                        テキストチャンネル: <#${interaction.channelId}>
+                        ボイスチャンネル: <#${channel.id}>
+
+                        :exclamation: すべてのメッセージが読み上げされます。
+                        :warning: R18利用が禁止されているキャラクターはメッセージの内容に関わらず読み上げされません。
+                        
+                        ※このBotはVOICEVOXを使用して音声を生成しています。利用規約:<https://voicevox.hiroshiba.jp/term/>
+                    """.trimIndent()
+                } else {
+                    content = """
+                        接続しました。
+                        テキストチャンネル: <#${interaction.channelId}>
+                        ボイスチャンネル: <#${channel.id}>
+
+                        :exclamation: 不適切と判定されたメッセージは読み上げされません。
+                        
+                        ※このBotはVOICEVOXを使用して音声を生成しています。利用規約:<https://voicevox.hiroshiba.jp/term/>
+                    """.trimIndent()
+                }
+            }
         } catch (e: Exception) {
             defer.respond { content = "エラーが発生しました。" }
             println("Could not join the voice channel ${guild.id} / ${channel.id}")

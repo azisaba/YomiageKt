@@ -74,5 +74,5 @@ enum class Characters(
 enum class NsfwType(val description: String) {
     Allowed(":o:"),
     Plausible(":warning: (他人に不快感を与えない程度にバレないようにこっそりやってください)"),
-    Disallowed(":x: (禁止)"),
+    Disallowed(":x:"),
 }
