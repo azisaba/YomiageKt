@@ -1,6 +1,7 @@
 package net.azisaba.yomiagekt
 
 import dev.kord.core.Kord
+import dev.kord.core.behavior.reply
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.ApplicationCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
@@ -59,6 +60,12 @@ suspend fun main() {
         val config = GuildsConfig[guild.id]
         if (message.author?.isBot != false) return@on
         if (config.mutedUsers.contains(message.author?.id)) return@on
+        if (message.content == "^skip") {
+            state.stopTrack()
+            message.reply { content = "現在再生中の読み上げをスキップしました。" }
+            return@on
+        }
+        if (message.content.startsWith("^")) return@on
         state.queueUserInput(message)
     }
 
