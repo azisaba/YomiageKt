@@ -34,6 +34,10 @@ data class YomiageState(
     var audioProvider: AtomicReference<AudioProvider>,
 ) {
     companion object {
+        private val userMentionPattern = "<@!?(\\d+)>".toRegex()
+        private val channelMentionPattern = "<#(\\d+)>".toRegex()
+        private val roleMentionPattern = "<@&(\\d+)>".toRegex()
+        private val urlPattern = "[a-zA-Z0-9]+://[^\\s\\n\\r\\t<>]+".toRegex()
         private val client = HttpClient(CIO) {
             engine {
                 this.requestTimeout = 1000 * 60
@@ -45,10 +49,12 @@ data class YomiageState(
     private val audioPlayer: AudioPlayer = YomiageStateStore.audioPlayerManager.createPlayer()
     private val queue = ArrayDeque<QueueData>()
     private var previousFile: File? = null
+    private var stopped: Boolean = true
 
     init {
         audioPlayer.addListener { event ->
             if (event is TrackEndEvent) {
+                stopped = true
                 runBlocking { playNext() }
             }
         }
@@ -56,11 +62,6 @@ data class YomiageState(
             AudioFrame.fromData(audioPlayer.provide()?.data)
         })
     }
-
-    private val userMentionPattern = "<@!?(\\d+)>".toRegex()
-    private val channelMentionPattern = "<#(\\d+)>".toRegex()
-    private val roleMentionPattern = "<@&(\\d+)>".toRegex()
-    private val urlPattern = "[a-zA-Z0-9]+://[^\\s\\n\\r\\t<>]+".toRegex()
 
     suspend fun queueUserInput(message: Message) {
         if (message.content.isBlank()) return
@@ -104,6 +105,10 @@ data class YomiageState(
             return
         }
 
+        if (currentMessage.length > 110) {
+            currentMessage = currentMessage.substring(0, 100) + "以下省略"
+        }
+
         if (!voiceChannelNsfw && !OpenAIModerationAPI.check(currentMessage)) {
             // flagged
             return
@@ -117,15 +122,19 @@ data class YomiageState(
         synchronized(queue) {
             queue.add(queueData)
         }
-        if (audioPlayer.playingTrack == null) {
+        if (stopped) {
             playNext()
         }
     }
 
     private suspend fun playNext() {
+        stopped = false
         previousFile?.delete()
         val queueData = synchronized(queue) {
-            if (queue.isEmpty()) return
+            if (queue.isEmpty()) {
+                stopped = true
+                return
+            }
             queue.removeFirst()
         }
 
