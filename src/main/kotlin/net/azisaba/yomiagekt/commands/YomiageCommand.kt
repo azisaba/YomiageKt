@@ -17,6 +17,7 @@ import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.data.Characters
 import net.azisaba.yomiagekt.data.YomiageState
 import net.azisaba.yomiagekt.data.YomiageStateStore
+import net.azisaba.yomiagekt.util.Util
 import net.azisaba.yomiagekt.util.Util.optString
 import net.azisaba.yomiagekt.util.Util.optSubcommand
 import java.util.concurrent.atomic.AtomicReference
@@ -66,7 +67,16 @@ object YomiageCommand : CommandHandler {
             }
         }
         interaction.optSubcommand("set-voice")?.let { opt ->
-            val character = Characters.valueOf(opt.optString("actor")!!)
+            val actor = opt.optString("actor")!!
+            val character = Characters.values().find { it.characterName == actor }
+            if (character == null) {
+                val list = Characters.values().sortedWith(Comparator.comparing { t -> Util.levenshtein(actor, t.characterName.replace("（.*?）".toRegex(), "")) })
+                interaction.respondEphemeral {
+                    content = "該当するキャラクターが見つかりません。以下のいずれかを選択してください。(`/yomiage voice-list`ですべての話者を表示します)\n" +
+                            list.subList(0, 7).joinToString("\n") { "`${it.characterName}`" }
+                }
+                return
+            }
             val userConfig = UsersConfig[interaction.user.id]
             userConfig.character = character
             UsersConfig.save()
@@ -77,6 +87,11 @@ object YomiageCommand : CommandHandler {
                     R18利用(年齢制限チャンネル以外は右の表記に関わらず:x:): ${character.nsfwType.description}
                     利用規約: <${character.terms}>
                 """.trimIndent()
+            }
+        }
+        if (interaction.optSubcommand("voice-list") != null) {
+            interaction.respondEphemeral {
+                content = "利用可能なキャラクター:\n${Characters.values().joinToString("\n") { "`${it.characterName}`" }}"
             }
         }
     }
@@ -103,7 +118,7 @@ object YomiageCommand : CommandHandler {
                     ref.get().provide()
                 }
             }
-            val state = YomiageState(guild.id, interaction.channelId, channel.id, connection, ref)
+            val state = YomiageState(guild.id, interaction.channelId, channel.id, channel.data.nsfw.discordBoolean, connection, ref)
             YomiageStateStore.put(guild.id, state)
             defer.respond { content = "接続しました。\nテキストチャンネル: <#${interaction.channelId}>\nボイスチャンネル: <#${channel.id}>\n\n※このBotはVOICEVOXを使用して音声を生成しています。利用規約:<https://voicevox.hiroshiba.jp/term/>" }
         } catch (e: Exception) {
@@ -124,11 +139,9 @@ object YomiageCommand : CommandHandler {
             subCommand("set-voice", "話し手を設定します") {
                 string("actor", "話し手") {
                     required = true
-                    Characters.values().forEach { c ->
-                        choice(c.characterName, c.name)
-                    }
                 }
             }
+            subCommand("voice-list", "利用可能な話し手を表示します")
         }
     }
 }

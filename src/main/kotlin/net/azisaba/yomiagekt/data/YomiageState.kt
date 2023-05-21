@@ -29,6 +29,7 @@ data class YomiageState(
     val guildId: Snowflake,
     val textChannelId: Snowflake,
     val voiceChannelId: Snowflake,
+    val voiceChannelNsfw: Boolean,
     val connection: VoiceConnection,
     var audioProvider: AtomicReference<AudioProvider>,
 ) {
@@ -96,12 +97,17 @@ data class YomiageState(
 
         if (currentMessage.isBlank()) return
 
-        if (!message.channel.asChannel().data.nsfw.discordBoolean && !OpenAIModerationAPI.check(currentMessage)) {
-            // flagged
+        val userConfig = UsersConfig[message.author!!.id]
+
+        if (userConfig.character.nsfwType == NsfwType.Disallowed && voiceChannelNsfw) {
+            // nsfw usage not allowed
             return
         }
 
-        val userConfig = UsersConfig[message.author!!.id]
+        if (!voiceChannelNsfw && !OpenAIModerationAPI.check(currentMessage)) {
+            // flagged
+            return
+        }
 
         queue(QueueData(currentMessage, userConfig.character))
     }
