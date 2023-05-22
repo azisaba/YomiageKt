@@ -37,6 +37,7 @@ data class YomiageState(
         private val userMentionPattern = "<@!?(\\d+)>".toRegex()
         private val channelMentionPattern = "<#(\\d+)>".toRegex()
         private val roleMentionPattern = "<@&(\\d+)>".toRegex()
+        private val emojiPattern = "<a?:([a-zA-Z0-9_\\-]+):\\d+>".toRegex()
         private val urlPattern = "[a-zA-Z0-9]+://[^\\s\\n\\r\\t<>]+".toRegex()
         private val client = HttpClient(CIO) {
             engine {
@@ -64,8 +65,7 @@ data class YomiageState(
     }
 
     suspend fun queueUserInput(message: Message) {
-        if (message.content.isBlank()) return
-        var currentMessage = message.content
+        var currentMessage = message.content + message.stickers.joinToString("") { it.name }
 
         currentMessage = userMentionPattern.replace(currentMessage) {
             val userId = it.groups[1]!!.value
@@ -89,6 +89,7 @@ data class YomiageState(
             }
         }
 
+        currentMessage = currentMessage.replace(emojiPattern, "$1")
         currentMessage = currentMessage.replace("\\|\\|.+?\\|\\|".toRegex(), "")
         currentMessage = currentMessage.replace(urlPattern, "")
 
