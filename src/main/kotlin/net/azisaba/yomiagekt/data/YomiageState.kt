@@ -67,6 +67,8 @@ data class YomiageState(
     suspend fun queueUserInput(message: Message) {
         var currentMessage = message.content + message.stickers.joinToString("") { it.name }
 
+        currentMessage = currentMessage.replace("```[\\s\\S]*?```".toRegex(), "") // trim code block
+
         currentMessage = userMentionPattern.replace(currentMessage) {
             val userId = it.groups[1]!!.value
             runBlocking {
