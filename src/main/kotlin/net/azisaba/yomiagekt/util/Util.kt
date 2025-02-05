@@ -70,7 +70,7 @@ object Util {
             ?.find { it.name == subCommandName }
 
     private fun Optional<List<CommandArgument<*>>>.optAny(name: String) = value?.find { it.name == name }?.value
-    fun Optional<List<CommandArgument<*>>>.optString(name: String) = optAny(name) as String?
+    fun Optional<List<CommandArgument<*>>>.optString(name: String) = optAny(name)?.toString()
     fun Optional<List<CommandArgument<*>>>.optDouble(name: String) = optString(name)?.toDouble()
     fun Optional<List<CommandArgument<*>>>.optBoolean(name: String) = optAny(name) as Boolean?
     fun Optional<List<CommandArgument<*>>>.optSnowflake(name: String) = optAny(name) as Snowflake?

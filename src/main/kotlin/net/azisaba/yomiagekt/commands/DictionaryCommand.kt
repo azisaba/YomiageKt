@@ -7,7 +7,7 @@ import dev.kord.rest.builder.interaction.GlobalMultiApplicationCommandBuilder
 import dev.kord.rest.builder.interaction.number
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.embed
 import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.util.Util.optDouble
 import net.azisaba.yomiagekt.util.Util.optString

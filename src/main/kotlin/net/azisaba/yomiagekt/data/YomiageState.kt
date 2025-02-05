@@ -12,8 +12,10 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.util.*
+import io.ktor.utils.io.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.azisaba.yomiagekt.config.BotConfig
 import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.config.UsersConfig
@@ -67,7 +69,9 @@ data class YomiageState(
     suspend fun queueUserInput(message: Message) {
         var currentMessage = message.content + message.stickers.joinToString("") { it.name }
 
+        println("pre-replace: $currentMessage")
         currentMessage = currentMessage.replace("```[\\s\\S]*?```".toRegex(), "") // trim code block
+        println("post-replace: $currentMessage")
 
         currentMessage = userMentionPattern.replace(currentMessage) {
             val userId = it.groups[1]!!.value
@@ -152,7 +156,9 @@ data class YomiageState(
                 setBody(queryJson)
                 header("Content-Type", "application/json")
             }.bodyAsChannel().toByteArray()
-            val file = File.createTempFile("yomiagekt", ".wav")
+            val file = withContext(Dispatchers.IO) {
+                File.createTempFile("yomiagekt", ".wav")
+            }
             file.writeBytes(bytes)
             YomiageStateStore.audioPlayerManager.playTrack(file.absolutePath, audioPlayer)
             previousFile = file
