@@ -70,6 +70,7 @@ data class YomiageState(
         var currentMessage = message.content + message.stickers.joinToString("") { it.name }
 
         println("pre-replace: $currentMessage")
+        currentMessage = currentMessage.replace("``?[^`\\n]+``?".toRegex(), "") // trim code block
         currentMessage = currentMessage.replace("```[\\s\\S]*?```".toRegex(), "") // trim code block
         println("post-replace: $currentMessage")
 
