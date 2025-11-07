@@ -1,0 +1,39 @@
+[versions]
+# plugin
+kotlin = "2.2.21"
+shadow = "9.2.2"
+
+# library
+ktor = "3.0.3"
+kord = "0.17.0"
+slf4j = "2.0.9"
+kaml = "0.70.0"
+lavaplayer = "2.2.4"
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+
+[libraries]
+ktorClientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktorClientCIO = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }
+kordCoreVoice = { module = "dev.kord:kord-core-voice", version.ref = "kord" }
+kordVoice = { module = "dev.kord:kord-voice", version.ref = "kord" }
+slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml" }
+lavaplayer = { module = "dev.arbjerg:lavaplayer", version.ref = "lavaplayer" }
+
+[bundles]
+ktor = [
+    "ktorClientCore",
+    "ktorClientCIO"
+]
+
+kord = [
+    "kordCore",
+    "kordCoreVoice",
+    "kordVoice"
+]
+

@@ -1,7 +1,7 @@
 plugins {
-    kotlin("jvm") version "2.1.10"
-    kotlin("plugin.serialization") version "2.1.10"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.shadow)
 }
 
 group = "net.azisaba"
@@ -12,18 +12,15 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-client-core:3.0.3")
-    implementation("io.ktor:ktor-client-cio:3.0.3")
-    implementation("dev.kord:kord-core:0.15.0")
-    implementation("dev.kord:kord-core-voice:0.15.0")
-    implementation("dev.kord:kord-voice:0.15.0")
-    implementation("org.slf4j:slf4j-simple:2.0.9")
-    implementation("com.charleskorn.kaml:kaml:0.70.0")
-    implementation("dev.arbjerg:lavaplayer:2.2.3")
+    implementation(libs.bundles.ktor)
+    implementation(libs.bundles.kord)
+    implementation(libs.slf4jSimple)
+    implementation(libs.kaml)
+    implementation(libs.lavaplayer)
 }
 
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(21)
 }
 
 tasks {
