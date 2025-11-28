@@ -1,5 +1,6 @@
 package net.azisaba.yomiagekt.command
 
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,6 +30,12 @@ object CommandManager {
         // store slash command
         commandMap[cmdName] = command
         logger.debug("$cmdName command registered.")
+    }
+
+    fun onCommand(event: SlashCommandInteractionEvent) {
+        if (event.guild == null) return
+        if (event.channelId == null) return
+        commandMap[event.name]?.onCommand(event)
     }
 
     fun getAllCommandData(): List<CommandData> = commandMap.values.map { cmd -> cmd.commandData }.toList()
