@@ -1,16 +1,20 @@
 package net.azisaba.yomiagekt.command
 
-import net.azisaba.yomiagekt.config.GuildsConfig
+import net.azisaba.yomiagekt.extension.config
 import net.azisaba.yomiagekt.extension.number
 import net.azisaba.yomiagekt.extension.optionDouble
 import net.azisaba.yomiagekt.extension.optionString
+import net.azisaba.yomiagekt.extension.respondEphemeral
 import net.azisaba.yomiagekt.extension.respondPublic
 import net.azisaba.yomiagekt.extension.string
 import net.azisaba.yomiagekt.extension.subCommand
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import kotlin.math.ceil
+import kotlin.math.min
 
 class DictionaryCommand : Command() {
     override val commandData: CommandData
@@ -51,7 +55,7 @@ class DictionaryCommand : Command() {
         val after = event.optionString("after") ?: return
 
         // remove old and set new dictionary
-        GuildsConfig[guild.id].modifyDictionary {
+        guild.config.modifyDictionary {
             it.removeIf { pair -> pair.first == before } // remove is needed to update the order of the dictionary
             it += before to after
         }
@@ -64,6 +68,10 @@ class DictionaryCommand : Command() {
         event: SlashCommandInteractionEvent,
     ) {
         val before = event.optionString("before") ?: return
+        guild.config.modifyDictionary {
+            it.removeIf { pair -> pair.first == before }
+        }
+        event.respondPublic("辞書から「$before」を削除しました")
     }
 
     fun removeAt(
@@ -71,7 +79,11 @@ class DictionaryCommand : Command() {
         member: Member,
         event: SlashCommandInteractionEvent,
     ) {
-        val index = event.optionDouble("index") ?: return
+        val index: Int = event.optionDouble("index")?.toInt() ?: return
+        guild.config.modifyDictionary {
+            it.removeAt(index)
+        }
+        event.respondPublic("辞書から${index}個目の言葉を削除しました")
     }
 
     fun list(
@@ -79,6 +91,29 @@ class DictionaryCommand : Command() {
         member: Member,
         event: SlashCommandInteractionEvent,
     ) {
-        val page = event.optionDouble("page") ?: return
+        val page = event.optionDouble("page")?.toInt() ?: return
+        val dict = guild.config.dictionary
+        if (dict.isEmpty()) {
+            event.respondEphemeral("辞書は空っぽです。")
+            return
+        }
+        val maxPage = ceil(dict.size / 30.0).toInt()
+        val actualPage = min(maxPage, page)
+        var index = 0
+        val minIndex = (actualPage - 1) * 30
+        val maxIndex = actualPage * 30
+        var content = ""
+        dict.forEach { (before, after) ->
+            if (index !in minIndex..maxIndex) return@forEach
+            content += "$index: `$before` → `$after`\n"
+            index++
+        }
+
+        // send response embed
+        event
+            .deferReply()
+            .setEmbeds(
+                EmbedBuilder().setDescription(content).build(),
+            ).queue()
     }
 }

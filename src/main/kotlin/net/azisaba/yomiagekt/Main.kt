@@ -16,7 +16,6 @@ import net.azisaba.yomiagekt.config.BotConfig
 import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.data.YomiageStateStore
-import net.azisaba.yomiagekt.old.commands.DictionaryCommand
 import net.azisaba.yomiagekt.old.commands.YomiageModCommand
 
 @OptIn(PrivilegedIntent::class)
@@ -34,7 +33,6 @@ suspend fun main() {
     val commands =
         mapOf(
             "yomiage-mod" to YomiageModCommand,
-            "dict" to DictionaryCommand,
         )
 
     client.createGlobalApplicationCommands {

@@ -1,16 +1,8 @@
 package net.azisaba.yomiagekt.extension
 
-import net.azisaba.yomiagekt.config.GuildConfig
-import net.azisaba.yomiagekt.config.GuildsConfig
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction
-
-/**
- * Get config for each guild
- */
-val SlashCommandInteractionEvent.config: GuildConfig
-    get() = GuildsConfig[id]
 
 /**
  * Get value from option and try to get member
