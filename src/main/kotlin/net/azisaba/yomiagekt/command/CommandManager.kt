@@ -1,5 +1,6 @@
 package net.azisaba.yomiagekt.command
 
+import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -29,4 +30,6 @@ object CommandManager {
         commandMap[cmdName] = command
         logger.debug("$cmdName command registered.")
     }
+
+    fun getAllCommandData(): List<CommandData> = commandMap.values.map { cmd -> cmd.commandData }.toList()
 }

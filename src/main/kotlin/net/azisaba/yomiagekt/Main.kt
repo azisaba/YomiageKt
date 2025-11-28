@@ -16,7 +16,6 @@ import net.azisaba.yomiagekt.config.BotConfig
 import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.data.YomiageStateStore
-import net.azisaba.yomiagekt.old.commands.YomiageModCommand
 
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
@@ -29,11 +28,6 @@ suspend fun main() {
     UsersConfig.load()
 
     val client = Kord(BotConfig.config.botToken)
-
-    val commands =
-        mapOf(
-            "yomiage-mod" to YomiageModCommand,
-        )
 
     client.createGlobalApplicationCommands {
         commands.values.distinct().forEach { it.register(this) }

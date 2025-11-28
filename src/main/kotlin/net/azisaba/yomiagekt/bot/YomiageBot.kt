@@ -1,5 +1,6 @@
 package net.azisaba.yomiagekt.bot
 
+import net.azisaba.yomiagekt.command.CommandManager
 import net.azisaba.yomiagekt.config.BotConfig
 import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.config.UsersConfig
@@ -26,9 +27,16 @@ class YomiageBot : ListenerAdapter() {
                 .createDefault(BotConfig.config.botToken)
                 .addEventListeners(this)
                 .build()
+
+        // init and register slash commands
+        CommandManager.init()
+        logger.info("CommandManager initialized.")
     }
 
     override fun onReady(event: ReadyEvent) {
+        bot.updateCommands().addCommands(CommandManager.getAllCommandData()).queue()
+        logger.info("Slash command registered.")
+
         logger.info("Bot on ready!")
     }
 
