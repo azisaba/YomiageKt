@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
 
 class YomiageBot : ListenerAdapter() {
     private lateinit var bot: JDA
@@ -85,21 +86,20 @@ class YomiageBot : ListenerAdapter() {
     override fun onGuildVoiceUpdate(event: GuildVoiceUpdateEvent) {
         val state = event.voiceState
         val channelId = state.channel?.id
-        if (channelId == null) {
-            if (state.member.id == bot.selfUser.id) {
-                // handle server side "disconnect"
-                YomiageStateStore.remove(state.guild.id)?.shutdown()
-                event.guild.audioManager.closeAudioConnection()
-            }
-            return
-        }
-        if (YomiageStateStore[state.guild.id]?.voiceChannelId == channelId) return
-        val voiceChannel = bot.getVoiceChannelById(channelId) ?: return
-        if (voiceChannel.members.size == 1) {
-            // handle server side "leave"
+        if (channelId == null && state.member.id == bot.selfUser.id) {
+            println("Server side disconnect")
+            // handle server side "disconnect"
             YomiageStateStore.remove(state.guild.id)?.shutdown()
             event.guild.audioManager.closeAudioConnection()
+            return
         }
+        event.jda.gatewayPool.schedule({
+            val audioManager = event.guild.audioManager
+            val ch = audioManager.connectedChannel ?: return@schedule
+            if (ch.members.none { m -> !m.user.isBot }) {
+                audioManager.closeAudioConnection()
+            }
+        }, 50, TimeUnit.MILLISECONDS)
     }
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
