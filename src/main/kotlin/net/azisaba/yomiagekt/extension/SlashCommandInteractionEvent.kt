@@ -18,6 +18,11 @@ val SlashCommandInteractionEvent.config: GuildConfig
 fun SlashCommandInteractionEvent.optionMember(name: String): Member? = getOption(name)?.asMember
 
 /**
+ * Get option as string
+ */
+fun SlashCommandInteractionEvent.optionString(name: String): String? = getOption(name)?.asString
+
+/**
  * Make request for ephemeral response
  * CAUTION: no .queue() required for this function
  */

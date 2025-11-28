@@ -10,7 +10,7 @@ import java.io.File
 
 @Serializable
 data class UsersConfig(
-    val users: MutableMap<Snowflake, UserConfig> = mutableMapOf(),
+    val users: MutableMap<String, UserConfig> = mutableMapOf(),
 ) {
     companion object {
         private lateinit var config: UsersConfig
@@ -28,7 +28,7 @@ data class UsersConfig(
             File("config/user.yml").writeText(Yaml.default.encodeToString(config))
         }
 
-        operator fun get(userId: Snowflake) = config.users.computeIfAbsent(userId) { UserConfig() }
+        operator fun get(userId: String) = config.users.computeIfAbsent(userId) { UserConfig() }
     }
 }
 

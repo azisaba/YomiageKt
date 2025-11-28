@@ -1,13 +1,19 @@
 package net.azisaba.yomiagekt.command
 
 import net.azisaba.yomiagekt.audio.AudioPlayerSendHandler
+import net.azisaba.yomiagekt.config.UsersConfig
+import net.azisaba.yomiagekt.extension.config
+import net.azisaba.yomiagekt.extension.optionString
 import net.azisaba.yomiagekt.extension.respond
 import net.azisaba.yomiagekt.extension.respondEphemeral
 import net.azisaba.yomiagekt.extension.respondPublic
 import net.azisaba.yomiagekt.extension.string
 import net.azisaba.yomiagekt.extension.subCommand
+import net.azisaba.yomiagekt.old.data.Characters
+import net.azisaba.yomiagekt.old.data.NsfwType
 import net.azisaba.yomiagekt.old.data.YomiageState
 import net.azisaba.yomiagekt.old.data.YomiageStateStore
+import net.azisaba.yomiagekt.old.util.Util
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -188,19 +194,78 @@ class YomiageCommand : Command() {
         member: Member,
         event: SlashCommandInteractionEvent,
     ) {
+        val state = YomiageStateStore[guild.id]
+        val actor = event.optionString("actor") ?: return
+        val character = Characters.entries.find { it.characterName == actor }
+
+        // If not found in Characters
+        if (character == null) {
+            val nearCharacters =
+                Characters.entries.sortedWith(
+                    Comparator.comparing { t ->
+                        Util.levenshtein(actor, t.characterName.replace("（.*?）".toRegex(), ""))
+                    },
+                )
+            event.respondEphemeral(
+                "該当するキャラクターが見つかりません。以下のいずれかを選択してください。(`/yomiage voice-list`ですべての話者を表示します)\n" +
+                    nearCharacters.subList(0, 7).joinToString("\n") { "`${it.characterName}`" },
+            )
+            return
+        }
+
+        // set user config
+        member.config.character = character
+        UsersConfig.save()
+
+        // feedback to user
+        val responseMsg =
+            if (state?.textChannelId == event.channelId && state?.voiceChannelNsfw == true) {
+                """
+                話者を${character.characterName}に設定しました。
+                キャラクターの説明: ${character.description}
+                R18利用: ${character.nsfwType.description} ${if (character.nsfwType == NsfwType.Disallowed) "(このチャンネルでは読み上げされません)" else ""}
+                利用規約: <${character.terms}>
+                """.trimIndent()
+            } else {
+                """
+                話者を${character.characterName}に設定しました。
+                キャラクターの説明: ${character.description}
+                R18利用(年齢制限チャンネル以外は右の表記に関わらず:x:): ${character.nsfwType.description}
+                利用規約: <${character.terms}>
+                """.trimIndent()
+            }
+        event.respondEphemeral(responseMsg)
     }
 
     fun voiceList(
         guild: Guild,
         member: Member,
         event: SlashCommandInteractionEvent,
-    ) {}
+    ) {
+        val state = YomiageStateStore[guild.id]
+        val responseMsg =
+            "利用可能なキャラクター:\n" +
+                if (state?.textChannelId == event.channelId && state?.voiceChannelNsfw == true) {
+                    Characters.entries.filter { it.nsfwType != NsfwType.Disallowed }.joinToString("\n") { "`${it.characterName}`" }
+                } else {
+                    Characters.entries.joinToString("\n") { "`${it.characterName}`" }
+                }
+        event.respondEphemeral(responseMsg)
+    }
 
     fun skip(
         guild: Guild,
         member: Member,
         event: SlashCommandInteractionEvent,
-    ) {}
+    ) {
+        val state = YomiageStateStore[guild.id]
+        if (state != null && state.textChannelId == event.channelId) {
+            state.stopTrack()
+            event.respondPublic("現在再生中の読み上げをスキップしました。")
+        } else {
+            event.respondEphemeral("読み上げ中のセッションがありません。")
+        }
+    }
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)
