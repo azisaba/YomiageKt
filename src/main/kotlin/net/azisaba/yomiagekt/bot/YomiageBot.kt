@@ -94,7 +94,7 @@ class YomiageBot : ListenerAdapter() {
         }
         if (YomiageStateStore[state.guild.id]?.voiceChannelId == channelId) return
         val voiceChannel = bot.getVoiceChannelById(channelId) ?: return
-        if (voiceChannel.members.size == 1) {
+        if (voiceChannel.members.none { m -> m.id != bot.selfUser.id }) {
             // handle server side "leave"
             YomiageStateStore.remove(state.guild.id)?.shutdown()
         }
