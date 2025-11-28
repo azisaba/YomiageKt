@@ -33,7 +33,6 @@ suspend fun main() {
 
     val commands =
         mapOf(
-            "yomiage" to YomiageCommand,
             "yomiage-mod" to YomiageModCommand,
             "dict" to DictionaryCommand,
         )

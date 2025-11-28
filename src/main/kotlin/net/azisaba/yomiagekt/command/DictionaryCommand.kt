@@ -1,8 +1,14 @@
 package net.azisaba.yomiagekt.command
 
+import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.extension.number
+import net.azisaba.yomiagekt.extension.optionDouble
+import net.azisaba.yomiagekt.extension.optionString
+import net.azisaba.yomiagekt.extension.respondPublic
 import net.azisaba.yomiagekt.extension.string
 import net.azisaba.yomiagekt.extension.subCommand
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 
@@ -26,5 +32,53 @@ class DictionaryCommand : Command() {
             }
 
     override fun onCommand(event: SlashCommandInteractionEvent) {
+        val guild = event.guild ?: return
+        val member = event.member ?: return
+        when (event.subcommandName) {
+            "add" -> add(guild, member, event)
+            "remove" -> remove(guild, member, event)
+            "remove-at" -> removeAt(guild, member, event)
+            "list" -> list(guild, member, event)
+        }
+    }
+
+    fun add(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
+        val before = event.optionString("before") ?: return
+        val after = event.optionString("after") ?: return
+
+        // remove old and set new dictionary
+        GuildsConfig[guild.id].modifyDictionary {
+            it.removeIf { pair -> pair.first == before } // remove is needed to update the order of the dictionary
+            it += before to after
+        }
+        event.respondPublic("辞書に「$before」→「$after」を登録しました")
+    }
+
+    fun remove(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
+        val before = event.optionString("before") ?: return
+    }
+
+    fun removeAt(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
+        val index = event.optionDouble("index") ?: return
+    }
+
+    fun list(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
+        val page = event.optionDouble("page") ?: return
     }
 }

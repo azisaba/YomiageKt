@@ -9,44 +9,11 @@ import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.message.embed
 import net.azisaba.yomiagekt.config.GuildsConfig
-import net.azisaba.yomiagekt.util.Util.optDouble
-import net.azisaba.yomiagekt.util.Util.optString
-import net.azisaba.yomiagekt.util.Util.optSubcommand
 import kotlin.math.ceil
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 object DictionaryCommand : CommandHandler {
     override suspend fun handle(interaction: ApplicationCommandInteraction) {
-        interaction.optSubcommand("add")?.let { opt ->
-            val before = opt.optString("before")!!
-            val after = opt.optString("after")!!
-            add(interaction, before, after)
-        }
-        interaction.optSubcommand("remove")?.let { opt ->
-            val before = opt.optString("before")!!
-            remove(interaction, before)
-        }
-        interaction.optSubcommand("remove-at")?.let { opt ->
-            val index = opt.optDouble("index")!!.roundToInt()
-            removeAt(interaction, index)
-        }
-        interaction.optSubcommand("list")?.let { opt ->
-            val page = opt.optDouble("page")?.roundToInt() ?: 1
-            list(interaction, page)
-        }
-    }
-
-    private suspend fun add(
-        interaction: ApplicationCommandInteraction,
-        before: String,
-        after: String,
-    ) {
-        GuildsConfig[interaction.channel.getGuildOrNull()!!.id].modifyDictionary {
-            it.removeIf { pair -> pair.first == before } // remove is needed to update the order of the dictionary
-            it += before to after
-        }
-        interaction.respondPublic { content = "辞書に「$before」→「$after」を登録しました" }
     }
 
     private suspend fun remove(
