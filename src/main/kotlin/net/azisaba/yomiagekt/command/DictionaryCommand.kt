@@ -91,7 +91,7 @@ class DictionaryCommand : Command() {
         member: Member,
         event: SlashCommandInteractionEvent,
     ) {
-        val page = event.optionDouble("page")?.toInt() ?: return
+        val page = event.optionDouble("page")?.toInt() ?: 1
         val dict = guild.config.dictionary
         if (dict.isEmpty()) {
             event.respondEphemeral("辞書は空っぽです。")

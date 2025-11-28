@@ -87,7 +87,6 @@ class YomiageBot : ListenerAdapter() {
         val state = event.voiceState
         val channelId = state.channel?.id
         if (channelId == null && state.member.id == bot.selfUser.id) {
-            println("Server side disconnect")
             // handle server side "disconnect"
             YomiageStateStore.remove(state.guild.id)?.shutdown()
             event.guild.audioManager.closeAudioConnection()
