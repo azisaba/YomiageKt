@@ -10,8 +10,8 @@ import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.interaction.user
 import dev.kord.rest.builder.message.allowedMentions
 import net.azisaba.yomiagekt.config.GuildsConfig
-import net.azisaba.yomiagekt.old.util.Util.optSnowflake
-import net.azisaba.yomiagekt.old.util.Util.optSubcommand
+import net.azisaba.yomiagekt.util.Util.optSnowflake
+import net.azisaba.yomiagekt.util.Util.optSubcommand
 
 object YomiageModCommand : CommandHandler {
     override suspend fun handle(interaction: ApplicationCommandInteraction) {

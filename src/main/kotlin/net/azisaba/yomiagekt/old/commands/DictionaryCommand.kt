@@ -9,9 +9,9 @@ import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.message.embed
 import net.azisaba.yomiagekt.config.GuildsConfig
-import net.azisaba.yomiagekt.old.util.Util.optDouble
-import net.azisaba.yomiagekt.old.util.Util.optString
-import net.azisaba.yomiagekt.old.util.Util.optSubcommand
+import net.azisaba.yomiagekt.util.Util.optDouble
+import net.azisaba.yomiagekt.util.Util.optString
+import net.azisaba.yomiagekt.util.Util.optSubcommand
 import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt

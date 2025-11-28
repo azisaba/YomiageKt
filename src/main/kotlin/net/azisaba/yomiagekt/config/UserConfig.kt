@@ -5,7 +5,7 @@ import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import net.azisaba.yomiagekt.old.data.Characters
+import net.azisaba.yomiagekt.data.Characters
 import java.io.File
 
 @Serializable

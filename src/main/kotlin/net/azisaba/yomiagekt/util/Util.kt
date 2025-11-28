@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.old.util
+package net.azisaba.yomiagekt.util
 
 import dev.kord.common.entity.CommandArgument
 import dev.kord.common.entity.Snowflake

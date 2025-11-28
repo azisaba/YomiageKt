@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.old.util
+package net.azisaba.yomiagekt.util
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO

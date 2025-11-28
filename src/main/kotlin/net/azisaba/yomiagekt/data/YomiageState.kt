@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.old.data
+package net.azisaba.yomiagekt.data
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent
@@ -19,8 +19,8 @@ import kotlinx.coroutines.withContext
 import net.azisaba.yomiagekt.config.BotConfig
 import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.config.UsersConfig
-import net.azisaba.yomiagekt.old.data.YomiageStateStore.playTrack
-import net.azisaba.yomiagekt.old.util.OpenAIModerationAPI
+import net.azisaba.yomiagekt.data.YomiageStateStore.playTrack
+import net.azisaba.yomiagekt.util.OpenAIModerationAPI
 import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets

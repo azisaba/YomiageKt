@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.old.data
+package net.azisaba.yomiagekt.data
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer

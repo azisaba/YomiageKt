@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.old.data
+package net.azisaba.yomiagekt.data
 
 @Suppress("ktlint:standard:max-line-length")
 enum class Characters(

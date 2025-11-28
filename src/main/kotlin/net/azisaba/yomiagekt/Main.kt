@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.toList
 import net.azisaba.yomiagekt.config.BotConfig
 import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.config.UsersConfig
+import net.azisaba.yomiagekt.data.YomiageStateStore
 import net.azisaba.yomiagekt.old.commands.DictionaryCommand
 import net.azisaba.yomiagekt.old.commands.YomiageModCommand
-import net.azisaba.yomiagekt.old.data.YomiageStateStore
 
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {

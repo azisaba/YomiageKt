@@ -2,6 +2,10 @@ package net.azisaba.yomiagekt.command
 
 import net.azisaba.yomiagekt.audio.AudioPlayerSendHandler
 import net.azisaba.yomiagekt.config.UsersConfig
+import net.azisaba.yomiagekt.data.Characters
+import net.azisaba.yomiagekt.data.NsfwType
+import net.azisaba.yomiagekt.data.YomiageState
+import net.azisaba.yomiagekt.data.YomiageStateStore
 import net.azisaba.yomiagekt.extension.config
 import net.azisaba.yomiagekt.extension.optionString
 import net.azisaba.yomiagekt.extension.respond
@@ -9,11 +13,7 @@ import net.azisaba.yomiagekt.extension.respondEphemeral
 import net.azisaba.yomiagekt.extension.respondPublic
 import net.azisaba.yomiagekt.extension.string
 import net.azisaba.yomiagekt.extension.subCommand
-import net.azisaba.yomiagekt.old.data.Characters
-import net.azisaba.yomiagekt.old.data.NsfwType
-import net.azisaba.yomiagekt.old.data.YomiageState
-import net.azisaba.yomiagekt.old.data.YomiageStateStore
-import net.azisaba.yomiagekt.old.util.Util
+import net.azisaba.yomiagekt.util.Util
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
