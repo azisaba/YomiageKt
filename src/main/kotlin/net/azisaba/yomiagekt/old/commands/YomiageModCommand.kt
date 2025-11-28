@@ -24,7 +24,7 @@ object YomiageModCommand : CommandHandler {
                     interaction.respondEphemeral { content = "ユーザーが存在しません。" }
                     return
                 }
-            if (config.modifyMutedUsers { it.add(userId) }) {
+            if (config.modifyMutedUsers { it.add(userId.toString()) }) {
                 interaction.respondEphemeral {
                     content = "``${user.tag}``をミュートしました"
                     allowedMentions {}
@@ -43,7 +43,7 @@ object YomiageModCommand : CommandHandler {
                     interaction.respondEphemeral { content = "ユーザーが存在しません。" }
                     return
                 }
-            if (config.modifyMutedUsers { it.remove(userId) }) {
+            if (config.modifyMutedUsers { it.remove(userId.toString()) }) {
                 interaction.respondEphemeral {
                     content = "``${user.tag}``のミュートを解除しました"
                     allowedMentions {}
