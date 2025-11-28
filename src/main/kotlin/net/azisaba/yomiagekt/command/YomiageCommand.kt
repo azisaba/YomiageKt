@@ -85,6 +85,8 @@ class YomiageCommand : Command() {
         try {
             guild.audioManager.apply {
                 openAudioConnection(memberJoiningCh)
+                isSelfDeafened = true
+
                 val state =
                     YomiageState(guildId, textChannelId, voiceChannelId, nsfw) {
                         sendingHandler = AudioPlayerSendHandler(this)
