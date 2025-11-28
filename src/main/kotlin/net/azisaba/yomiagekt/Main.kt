@@ -12,12 +12,12 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent
 import kotlinx.coroutines.flow.toList
+import net.azisaba.yomiagekt.config.BotConfig
+import net.azisaba.yomiagekt.config.GuildsConfig
+import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.old.commands.DictionaryCommand
 import net.azisaba.yomiagekt.old.commands.YomiageCommand
 import net.azisaba.yomiagekt.old.commands.YomiageModCommand
-import net.azisaba.yomiagekt.old.config.BotConfig
-import net.azisaba.yomiagekt.old.config.GuildsConfig
-import net.azisaba.yomiagekt.old.config.UsersConfig
 import net.azisaba.yomiagekt.old.data.YomiageStateStore
 
 @OptIn(PrivilegedIntent::class)

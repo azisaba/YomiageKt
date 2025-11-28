@@ -8,7 +8,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import net.azisaba.yomiagekt.old.config.BotConfig
+import net.azisaba.yomiagekt.config.BotConfig
 
 object OpenAIModerationAPI {
     private val cache = mutableMapOf<String, Boolean>()

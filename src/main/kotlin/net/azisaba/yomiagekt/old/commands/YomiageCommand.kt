@@ -13,7 +13,7 @@ import dev.kord.rest.builder.interaction.GlobalMultiApplicationCommandBuilder
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.voice.AudioProvider
-import net.azisaba.yomiagekt.old.config.UsersConfig
+import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.old.data.Characters
 import net.azisaba.yomiagekt.old.data.NsfwType
 import net.azisaba.yomiagekt.old.data.YomiageState

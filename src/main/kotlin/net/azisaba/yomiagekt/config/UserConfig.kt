@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.old.config
+package net.azisaba.yomiagekt.config
 
 import com.charleskorn.kaml.Yaml
 import dev.kord.common.entity.Snowflake

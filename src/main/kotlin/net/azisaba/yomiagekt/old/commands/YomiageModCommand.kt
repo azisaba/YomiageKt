@@ -9,7 +9,7 @@ import dev.kord.rest.builder.interaction.GlobalMultiApplicationCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.interaction.user
 import dev.kord.rest.builder.message.allowedMentions
-import net.azisaba.yomiagekt.old.config.GuildsConfig
+import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.old.util.Util.optSnowflake
 import net.azisaba.yomiagekt.old.util.Util.optSubcommand
 

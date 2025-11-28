@@ -19,9 +19,9 @@ import io.ktor.utils.io.toByteArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import net.azisaba.yomiagekt.old.config.BotConfig
-import net.azisaba.yomiagekt.old.config.GuildsConfig
-import net.azisaba.yomiagekt.old.config.UsersConfig
+import net.azisaba.yomiagekt.config.BotConfig
+import net.azisaba.yomiagekt.config.GuildsConfig
+import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.old.data.YomiageStateStore.playTrack
 import net.azisaba.yomiagekt.old.util.OpenAIModerationAPI
 import java.io.File
