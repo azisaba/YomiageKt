@@ -21,6 +21,8 @@ import net.azisaba.yomiagekt.util.OpenAIModerationAPI
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -33,6 +35,7 @@ data class YomiageState(
     val registerFunction: AudioPlayer.() -> Unit = {},
 ) {
     companion object {
+        private val logger: Logger = LoggerFactory.getLogger(this::class.java)
         private val userMentionPattern = "<@!?(\\d+)>".toRegex()
         private val channelMentionPattern = "<#(\\d+)>".toRegex()
         private val roleMentionPattern = "<@&(\\d+)>".toRegex()
@@ -69,10 +72,10 @@ data class YomiageState(
     ) {
         var currentMessage = message.contentRaw + message.stickers.joinToString("") { it.name }
 
-        println("pre-replace: $currentMessage")
+        logger.debug("pre-replace: $currentMessage")
         currentMessage = currentMessage.replace("``?[^`\\n]+``?".toRegex(), "") // trim code block
         currentMessage = currentMessage.replace("```[\\s\\S]*?```".toRegex(), "") // trim code block
-        println("post-replace: $currentMessage")
+        logger.debug("post-replace: $currentMessage")
 
         currentMessage =
             userMentionPattern.replace(currentMessage) {

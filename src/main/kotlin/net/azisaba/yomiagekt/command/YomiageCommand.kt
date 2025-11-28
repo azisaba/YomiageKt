@@ -149,6 +149,7 @@ class YomiageCommand : Command() {
         val removedState = YomiageStateStore.remove(guild.id)
         if (removedState != null) {
             removedState.shutdown()
+            guild.audioManager.closeAudioConnection()
             event.respondPublic("<#${removedState.voiceChannelId}>の読み上げを終了しました")
         } else {
             // for safety handling
