@@ -117,7 +117,7 @@ data class YomiageState(
 
         if (currentMessage.isBlank()) return
 
-        val userConfig = UsersConfig[message.author!!.id]
+        val userConfig = UsersConfig[message.author!!.id.toString()]
 
         if (userConfig.character.nsfwType == NsfwType.Disallowed && voiceChannelNsfw) {
             // nsfw usage not allowed

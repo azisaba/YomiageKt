@@ -16,7 +16,6 @@ import net.azisaba.yomiagekt.config.BotConfig
 import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.old.commands.DictionaryCommand
-import net.azisaba.yomiagekt.old.commands.YomiageCommand
 import net.azisaba.yomiagekt.old.commands.YomiageModCommand
 import net.azisaba.yomiagekt.old.data.YomiageStateStore
 
