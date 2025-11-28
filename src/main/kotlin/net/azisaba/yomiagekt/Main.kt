@@ -1,11 +1,9 @@
 package net.azisaba.yomiagekt
 
 import dev.kord.core.Kord
-import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.VoiceChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.ApplicationCommandInteractionCreateEvent
-import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.user.VoiceStateUpdateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
@@ -44,22 +42,6 @@ suspend fun main() {
 
     client.on<ReadyEvent> {
         println("Logged in as ${kord.getSelf().tag}!")
-    }
-
-    client.on<MessageCreateEvent> {
-        val guild = getGuildOrNull() ?: return@on
-        val state = YomiageStateStore[guild.id] ?: return@on
-        if (state.textChannelId != message.channelId) return@on
-        val config = GuildsConfig[guild.id]
-        if (message.author?.isBot != false) return@on
-        if (config.mutedUsers.contains(message.author?.id)) return@on
-        if (message.content == "^skip") {
-            state.stopTrack()
-            message.reply { content = "現在再生中の読み上げをスキップしました。" }
-            return@on
-        }
-        if (message.content.startsWith("^")) return@on
-        state.queueUserInput(message)
     }
 
     client.on<VoiceStateUpdateEvent> {

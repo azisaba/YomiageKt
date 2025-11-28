@@ -3,8 +3,6 @@ package net.azisaba.yomiagekt.data
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent
 import dev.kord.common.annotation.KordVoice
-import dev.kord.common.entity.Snowflake
-import dev.kord.core.entity.Message
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.header
@@ -21,6 +19,9 @@ import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.data.YomiageStateStore.playTrack
 import net.azisaba.yomiagekt.util.OpenAIModerationAPI
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Message
 import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -61,15 +62,14 @@ data class YomiageState(
             }
         }
         registerFunction(audioPlayer)
-//        audioProvider.set(
-//            AudioProvider {
-//                AudioFrame.fromData(audioPlayer.provide()?.data)
-//            },
-//        )
     }
 
-    suspend fun queueUserInput(message: Message) {
-        var currentMessage = message.content + message.stickers.joinToString("") { it.name }
+    fun queueUserInput(
+        message: Message,
+        guild: Guild,
+        bot: JDA,
+    ) {
+        var currentMessage = message.contentRaw + message.stickers.joinToString("") { it.name }
 
         println("pre-replace: $currentMessage")
         currentMessage = currentMessage.replace("``?[^`\\n]+``?".toRegex(), "") // trim code block
@@ -80,13 +80,11 @@ data class YomiageState(
             userMentionPattern.replace(currentMessage) {
                 val userId = it.groups[1]!!.value
                 runBlocking {
-                    val member = message.getGuild().getMemberOrNull(Snowflake(userId))
+                    val member = guild.getMemberById(userId)
                     '@' + (
-                        member?.nickname ?: message
-                            .getGuild()
-                            .kord
-                            .getUser(Snowflake(userId))
-                            ?.username ?: "謎のユーザー"
+                        member?.nickname ?: bot
+                            .getUserById(userId)
+                            ?.name ?: "謎のユーザー"
                     )
                 }
             }
@@ -95,7 +93,7 @@ data class YomiageState(
             channelMentionPattern.replace(currentMessage) {
                 val channelId = it.groups[1]!!.value
                 runBlocking {
-                    "しゃーぷ" + (message.getGuild().getChannelOrNull(Snowflake(channelId))?.name ?: "謎のチャンネル")
+                    "しゃーぷ" + (guild.getGuildChannelById(channelId)?.name ?: "謎のチャンネル")
                 }
             }
 
@@ -103,7 +101,7 @@ data class YomiageState(
             roleMentionPattern.replace(currentMessage) {
                 val roleId = it.groups[1]!!.value
                 runBlocking {
-                    '@' + (message.getGuild().getRoleOrNull(Snowflake(roleId))?.name ?: "謎のロール")
+                    '@' + (guild.getRoleById(roleId)?.name ?: "謎のロール")
                 }
             }
 
@@ -117,7 +115,7 @@ data class YomiageState(
 
         if (currentMessage.isBlank()) return
 
-        val userConfig = UsersConfig[message.author!!.id.toString()]
+        val userConfig = UsersConfig[message.author.id]
 
         if (userConfig.character.nsfwType == NsfwType.Disallowed && voiceChannelNsfw) {
             // nsfw usage not allowed
@@ -125,10 +123,10 @@ data class YomiageState(
         }
 
         if (currentMessage.length > 110) {
-            currentMessage = currentMessage.substring(0, 100) + "以下省略"
+            currentMessage = currentMessage.take(100) + "以下省略"
         }
 
-        if (!voiceChannelNsfw && !OpenAIModerationAPI.check(currentMessage)) {
+        if (!voiceChannelNsfw && runBlocking { !OpenAIModerationAPI.check(currentMessage) }) {
             // flagged
             return
         }
@@ -136,13 +134,15 @@ data class YomiageState(
         queue(QueueData(currentMessage, userConfig.character))
     }
 
-    private suspend fun queue(queueData: QueueData) {
+    private fun queue(queueData: QueueData) {
         if (queueData.message.isBlank()) return
         synchronized(queue) {
             queue.add(queueData)
         }
         if (stopped) {
-            playNext()
+            runBlocking {
+                playNext()
+            }
         }
     }
 
