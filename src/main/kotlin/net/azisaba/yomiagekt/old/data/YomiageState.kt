@@ -192,7 +192,7 @@ data class YomiageState(
         audioPlayer.stopTrack()
     }
 
-    suspend fun shutdown() {
+    fun shutdown() {
         audioPlayer.destroy()
     }
 

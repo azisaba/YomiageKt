@@ -3,10 +3,13 @@ package net.azisaba.yomiagekt.command
 import net.azisaba.yomiagekt.audio.AudioPlayerSendHandler
 import net.azisaba.yomiagekt.extension.respond
 import net.azisaba.yomiagekt.extension.respondEphemeral
+import net.azisaba.yomiagekt.extension.respondPublic
 import net.azisaba.yomiagekt.extension.string
 import net.azisaba.yomiagekt.extension.subCommand
 import net.azisaba.yomiagekt.old.data.YomiageState
 import net.azisaba.yomiagekt.old.data.YomiageStateStore
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.slf4j.LoggerFactory
@@ -27,24 +30,27 @@ class YomiageCommand : Command() {
             }
 
     override fun onCommand(event: SlashCommandInteractionEvent) {
+        val guild = event.guild ?: return
+        val member = event.member ?: return
         when (event.subcommandName) {
-            "join" -> join(event)
-            "leave" -> leave(event)
-            "where" -> where(event)
-            "credit" -> credit(event)
-            "set-voice" -> setVoice(event)
-            "voice-list" -> voiceList(event)
-            "skip" -> skip(event)
+            "join" -> join(guild, member, event)
+            "leave" -> leave(guild, member, event)
+            "where" -> where(guild, member, event)
+            "credit" -> credit(guild, member, event)
+            "set-voice" -> setVoice(guild, member, event)
+            "voice-list" -> voiceList(guild, member, event)
+            "skip" -> skip(guild, member, event)
         }
     }
 
     /**
      * Join to the vc
      */
-    fun join(event: SlashCommandInteractionEvent) {
-        val guild = event.guild ?: return
-        val member = event.member ?: return
-
+    fun join(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
         // get voice state and check bot already joined
         val state = YomiageStateStore[guild.id]
         if (state != null) {
@@ -110,17 +116,91 @@ class YomiageCommand : Command() {
         deferredMsg.respond(responseMsg)
     }
 
-    fun leave(event: SlashCommandInteractionEvent) {}
+    /**
+     * Leave from current vc
+     */
+    fun leave(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
+        // get state and is running
+        val state = YomiageStateStore[guild.id]
+        if (state == null) {
+            event.respondEphemeral("読み上げ中のセッションがありません。")
+            return
+        }
 
-    fun where(event: SlashCommandInteractionEvent) {}
+        // check text channel id
+        if (event.channelId != state.textChannelId) {
+            event.respondEphemeral("このチャンネルではleaveコマンドを使用できません。")
+            return
+        }
 
-    fun credit(event: SlashCommandInteractionEvent) {}
+        // remove state and shutdown
+        val removedState = YomiageStateStore.remove(guild.id)
+        if (removedState != null) {
+            removedState.shutdown()
+            event.respondPublic("<#${removedState.voiceChannelId}>の読み上げを終了しました")
+        } else {
+            // for safety handling
+            event.respondEphemeral("読み上げ中のセッションがありません。")
+        }
+    }
 
-    fun setVoice(event: SlashCommandInteractionEvent) {}
+    fun where(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
+        val state = YomiageStateStore[guild.id]
+        val responseMsg =
+            if (state != null) {
+                """
+                下記のチャンネルで読み上げ中です。
+                テキストチャンネル: <#${state.textChannelId}>
+                ボイスチャンネル: <#${state.voiceChannelId}>
+                """.trimIndent()
+            } else {
+                "読み上げ中のセッションがありません。"
+            }
+        event.respondEphemeral(responseMsg)
+    }
 
-    fun voiceList(event: SlashCommandInteractionEvent) {}
+    fun credit(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
+        val state = YomiageStateStore[guild.id]
+        if (state != null && state.textChannelId == event.channelId) {
+            event.respondPublic(
+                "読み上げに使用したキャラクターのクレジット表記:\n" +
+                    state.usedCharacters.joinToString("\n") { it.credit },
+            )
+        } else {
+            event.respondEphemeral("読み上げ中のセッションがありません。")
+        }
+    }
 
-    fun skip(event: SlashCommandInteractionEvent) {}
+    fun setVoice(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
+    }
+
+    fun voiceList(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {}
+
+    fun skip(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {}
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)
