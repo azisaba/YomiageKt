@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.commands
+package net.azisaba.yomiagekt.old.commands
 
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -9,9 +9,9 @@ import dev.kord.rest.builder.interaction.GlobalMultiApplicationCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.interaction.user
 import dev.kord.rest.builder.message.allowedMentions
-import net.azisaba.yomiagekt.config.GuildsConfig
-import net.azisaba.yomiagekt.util.Util.optSnowflake
-import net.azisaba.yomiagekt.util.Util.optSubcommand
+import net.azisaba.yomiagekt.old.config.GuildsConfig
+import net.azisaba.yomiagekt.old.util.Util.optSnowflake
+import net.azisaba.yomiagekt.old.util.Util.optSubcommand
 
 object YomiageModCommand : CommandHandler {
     override suspend fun handle(interaction: ApplicationCommandInteraction) {
@@ -19,10 +19,11 @@ object YomiageModCommand : CommandHandler {
         val config = GuildsConfig[guild.id]
         interaction.optSubcommand("mute")?.let { opt ->
             val userId = opt.optSnowflake("user")!!
-            val user = guild.getMemberOrNull(userId) ?: run {
-                interaction.respondEphemeral { content = "ユーザーが存在しません。" }
-                return
-            }
+            val user =
+                guild.getMemberOrNull(userId) ?: run {
+                    interaction.respondEphemeral { content = "ユーザーが存在しません。" }
+                    return
+                }
             if (config.modifyMutedUsers { it.add(userId) }) {
                 interaction.respondEphemeral {
                     content = "``${user.tag}``をミュートしました"
@@ -37,10 +38,11 @@ object YomiageModCommand : CommandHandler {
         }
         interaction.optSubcommand("unmute")?.let { opt ->
             val userId = opt.optSnowflake("user")!!
-            val user = guild.getMemberOrNull(userId) ?: run {
-                interaction.respondEphemeral { content = "ユーザーが存在しません。" }
-                return
-            }
+            val user =
+                guild.getMemberOrNull(userId) ?: run {
+                    interaction.respondEphemeral { content = "ユーザーが存在しません。" }
+                    return
+                }
             if (config.modifyMutedUsers { it.remove(userId) }) {
                 interaction.respondEphemeral {
                     content = "``${user.tag}``のミュートを解除しました"

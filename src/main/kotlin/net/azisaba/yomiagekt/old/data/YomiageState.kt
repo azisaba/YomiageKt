@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.data
+package net.azisaba.yomiagekt.old.data
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent
@@ -8,19 +8,22 @@ import dev.kord.core.entity.Message
 import dev.kord.voice.AudioFrame
 import dev.kord.voice.AudioProvider
 import dev.kord.voice.VoiceConnection
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.utils.io.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
+import io.ktor.utils.io.toByteArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import net.azisaba.yomiagekt.config.BotConfig
-import net.azisaba.yomiagekt.config.GuildsConfig
-import net.azisaba.yomiagekt.config.UsersConfig
-import net.azisaba.yomiagekt.data.YomiageStateStore.playTrack
-import net.azisaba.yomiagekt.util.OpenAIModerationAPI
+import net.azisaba.yomiagekt.old.config.BotConfig
+import net.azisaba.yomiagekt.old.config.GuildsConfig
+import net.azisaba.yomiagekt.old.config.UsersConfig
+import net.azisaba.yomiagekt.old.data.YomiageStateStore.playTrack
+import net.azisaba.yomiagekt.old.util.OpenAIModerationAPI
 import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -41,11 +44,12 @@ data class YomiageState(
         private val roleMentionPattern = "<@&(\\d+)>".toRegex()
         private val emojiPattern = "<a?:([a-zA-Z0-9_\\-]+):\\d+>".toRegex()
         private val urlPattern = "[a-zA-Z0-9]+://[^\\s\\n\\r\\t<>]+".toRegex()
-        private val client = HttpClient(CIO) {
-            engine {
-                this.requestTimeout = 1000 * 60
+        private val client =
+            HttpClient(CIO) {
+                engine {
+                    this.requestTimeout = 1000 * 60
+                }
             }
-        }
     }
 
     val usedCharacters = mutableSetOf<Characters>()
@@ -61,9 +65,11 @@ data class YomiageState(
                 runBlocking { playNext() }
             }
         }
-        audioProvider.set(AudioProvider {
-            AudioFrame.fromData(audioPlayer.provide()?.data)
-        })
+        audioProvider.set(
+            AudioProvider {
+                AudioFrame.fromData(audioPlayer.provide()?.data)
+            },
+        )
     }
 
     suspend fun queueUserInput(message: Message) {
@@ -74,27 +80,36 @@ data class YomiageState(
         currentMessage = currentMessage.replace("```[\\s\\S]*?```".toRegex(), "") // trim code block
         println("post-replace: $currentMessage")
 
-        currentMessage = userMentionPattern.replace(currentMessage) {
-            val userId = it.groups[1]!!.value
-            runBlocking {
-                val member = message.getGuild().getMemberOrNull(Snowflake(userId))
-                '@' + (member?.nickname ?: message.getGuild().kord.getUser(Snowflake(userId))?.username ?: "謎のユーザー")
+        currentMessage =
+            userMentionPattern.replace(currentMessage) {
+                val userId = it.groups[1]!!.value
+                runBlocking {
+                    val member = message.getGuild().getMemberOrNull(Snowflake(userId))
+                    '@' + (
+                        member?.nickname ?: message
+                            .getGuild()
+                            .kord
+                            .getUser(Snowflake(userId))
+                            ?.username ?: "謎のユーザー"
+                    )
+                }
             }
-        }
 
-        currentMessage = channelMentionPattern.replace(currentMessage) {
-            val channelId = it.groups[1]!!.value
-            runBlocking {
-                "しゃーぷ" + (message.getGuild().getChannelOrNull(Snowflake(channelId))?.name ?: "謎のチャンネル")
+        currentMessage =
+            channelMentionPattern.replace(currentMessage) {
+                val channelId = it.groups[1]!!.value
+                runBlocking {
+                    "しゃーぷ" + (message.getGuild().getChannelOrNull(Snowflake(channelId))?.name ?: "謎のチャンネル")
+                }
             }
-        }
 
-        currentMessage = roleMentionPattern.replace(currentMessage) {
-            val roleId = it.groups[1]!!.value
-            runBlocking {
-                '@' + (message.getGuild().getRoleOrNull(Snowflake(roleId))?.name ?: "謎のロール")
+        currentMessage =
+            roleMentionPattern.replace(currentMessage) {
+                val roleId = it.groups[1]!!.value
+                runBlocking {
+                    '@' + (message.getGuild().getRoleOrNull(Snowflake(roleId))?.name ?: "謎のロール")
+                }
             }
-        }
 
         currentMessage = currentMessage.replace(emojiPattern, "$1")
         currentMessage = currentMessage.replace("\\|\\|.+?\\|\\|".toRegex(), "")
@@ -138,13 +153,14 @@ data class YomiageState(
     private suspend fun playNext() {
         stopped = false
         previousFile?.delete()
-        val queueData = synchronized(queue) {
-            if (queue.isEmpty()) {
-                stopped = true
-                return
+        val queueData =
+            synchronized(queue) {
+                if (queue.isEmpty()) {
+                    stopped = true
+                    return
+                }
+                queue.removeFirst()
             }
-            queue.removeFirst()
-        }
 
         usedCharacters.add(queueData.character)
 
@@ -153,13 +169,17 @@ data class YomiageState(
             val queryUrl = "${BotConfig.config.voicevoxEndpoint}/audio_query?text=$encodedMessage&speaker=${queueData.character.speakerIndex}"
             val queryJson = client.post(queryUrl).bodyAsText()
             if (queryJson.length <= 100) error("response is too short: $queryJson")
-            val bytes = client.post("${BotConfig.config.voicevoxEndpoint}/synthesis?speaker=${queueData.character.speakerIndex}") {
-                setBody(queryJson)
-                header("Content-Type", "application/json")
-            }.bodyAsChannel().toByteArray()
-            val file = withContext(Dispatchers.IO) {
-                File.createTempFile("yomiagekt", ".wav")
-            }
+            val bytes =
+                client
+                    .post("${BotConfig.config.voicevoxEndpoint}/synthesis?speaker=${queueData.character.speakerIndex}") {
+                        setBody(queryJson)
+                        header("Content-Type", "application/json")
+                    }.bodyAsChannel()
+                    .toByteArray()
+            val file =
+                withContext(Dispatchers.IO) {
+                    File.createTempFile("yomiagekt", ".wav")
+                }
             file.writeBytes(bytes)
             YomiageStateStore.audioPlayerManager.playTrack(file.absolutePath, audioPlayer)
             previousFile = file
@@ -179,5 +199,8 @@ data class YomiageState(
         connection.shutdown()
     }
 
-    data class QueueData(val message: String, val character: Characters)
+    data class QueueData(
+        val message: String,
+        val character: Characters,
+    )
 }

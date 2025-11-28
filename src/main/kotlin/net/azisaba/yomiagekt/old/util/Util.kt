@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.util
+package net.azisaba.yomiagekt.old.util
 
 import dev.kord.common.entity.CommandArgument
 import dev.kord.common.entity.Snowflake
@@ -13,7 +13,7 @@ import kotlin.math.min
 object Util {
     private fun Interaction.optAny(name: String): Any? =
         when (this) {
-            is ApplicationCommandInteraction ->
+            is ApplicationCommandInteraction -> {
                 this.data
                     .data
                     .options
@@ -22,12 +22,20 @@ object Util {
                     ?.value
                     ?.value
                     ?.value
+            }
 
-            is ModalSubmitInteraction ->
+            is ModalSubmitInteraction -> {
                 this.textInputs[name]?.value
-                    ?: this.data.data.options.value?.find { it.name == name }?.value?.value?.value
+                    ?: this.data.data.options.value
+                        ?.find { it.name == name }
+                        ?.value
+                        ?.value
+                        ?.value
+            }
 
-            else -> null
+            else -> {
+                null
+            }
         }
 
     fun Interaction.optString(name: String) = optAny(name)?.toString()
@@ -59,7 +67,10 @@ object Util {
             ?.find { it.name == name }
             ?.values
 
-    fun Interaction.optSubCommands(groupName: String, subCommandName: String): SubCommand? =
+    fun Interaction.optSubCommands(
+        groupName: String,
+        subCommandName: String,
+    ): SubCommand? =
         this.data
             .data
             .options
@@ -70,13 +81,21 @@ object Util {
             ?.find { it.name == subCommandName }
 
     private fun Optional<List<CommandArgument<*>>>.optAny(name: String) = value?.find { it.name == name }?.value
+
     fun Optional<List<CommandArgument<*>>>.optString(name: String) = optAny(name)?.toString()
+
     fun Optional<List<CommandArgument<*>>>.optDouble(name: String) = optString(name)?.toDouble()
+
     fun Optional<List<CommandArgument<*>>>.optBoolean(name: String) = optAny(name) as Boolean?
+
     fun Optional<List<CommandArgument<*>>>.optSnowflake(name: String) = optAny(name) as Snowflake?
+
     fun Optional<List<CommandArgument<*>>>.optLong(name: String) = optAny(name) as Long?
 
-    fun levenshtein(lhs: CharSequence, rhs: CharSequence) : Int {
+    fun levenshtein(
+        lhs: CharSequence,
+        rhs: CharSequence,
+    ): Int {
         if (lhs == rhs) return 0
         if (lhs.isEmpty()) return rhs.length
         if (rhs.isEmpty()) return lhs.length

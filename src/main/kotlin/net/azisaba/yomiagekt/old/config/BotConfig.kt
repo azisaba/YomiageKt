@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.config
+package net.azisaba.yomiagekt.old.config
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlComment
@@ -21,11 +21,12 @@ data class BotConfig(
     companion object {
         private val yaml = Yaml(configuration = YamlConfiguration(encodeDefaults = true, strictMode = false))
 
-        val config: BotConfig = File("config/bot.yml").let { file ->
-            if (!file.parentFile.exists()) file.parentFile.mkdirs()
-            if (!file.exists()) file.writeText(yaml.encodeToString(BotConfig()))
-            yaml.decodeFromString(serializer(), file.readText())
-        }
+        val config: BotConfig =
+            File("config/bot.yml").let { file ->
+                if (!file.parentFile.exists()) file.parentFile.mkdirs()
+                if (!file.exists()) file.writeText(yaml.encodeToString(BotConfig()))
+                yaml.decodeFromString(serializer(), file.readText())
+            }
 
         init {
             config.voicevoxEndpoint = config.voicevoxEndpoint.trimEnd('/')

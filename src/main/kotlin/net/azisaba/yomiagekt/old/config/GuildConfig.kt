@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.config
+package net.azisaba.yomiagekt.old.config
 
 import com.charleskorn.kaml.Yaml
 import dev.kord.common.entity.Snowflake
@@ -15,11 +15,12 @@ data class GuildsConfig(
         private lateinit var config: GuildsConfig
 
         fun load() {
-            config = File("config/guild.yml").let { file ->
-                if (!file.parentFile.exists()) file.parentFile.mkdirs()
-                if (!file.exists()) file.writeText(Yaml.default.encodeToString(emptyMap<Snowflake, GuildConfig>()))
-                Yaml.default.decodeFromString(file.readText())
-            }
+            config =
+                File("config/guild.yml").let { file ->
+                    if (!file.parentFile.exists()) file.parentFile.mkdirs()
+                    if (!file.exists()) file.writeText(Yaml.default.encodeToString(emptyMap<Snowflake, GuildConfig>()))
+                    Yaml.default.decodeFromString(file.readText())
+                }
         }
 
         fun save() {
@@ -35,9 +36,7 @@ data class GuildConfig(
     val dictionary: MutableList<Pair<String, String>> = mutableListOf(),
     val mutedUsers: MutableSet<Snowflake> = mutableSetOf(),
 ) {
-    fun <R> modifyDictionary(action: (MutableList<Pair<String, String>>) -> R): R =
-        action(dictionary).apply { GuildsConfig.save() }
+    fun <R> modifyDictionary(action: (MutableList<Pair<String, String>>) -> R): R = action(dictionary).apply { GuildsConfig.save() }
 
-    fun <R> modifyMutedUsers(action: (MutableSet<Snowflake>) -> R): R =
-        action(mutedUsers).apply { GuildsConfig.save() }
+    fun <R> modifyMutedUsers(action: (MutableSet<Snowflake>) -> R): R = action(mutedUsers).apply { GuildsConfig.save() }
 }

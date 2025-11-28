@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.util
+package net.azisaba.yomiagekt.old.util
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -8,7 +8,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import net.azisaba.yomiagekt.config.BotConfig
+import net.azisaba.yomiagekt.old.config.BotConfig
 
 object OpenAIModerationAPI {
     private val cache = mutableMapOf<String, Boolean>()

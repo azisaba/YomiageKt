@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.commands
+package net.azisaba.yomiagekt.old.commands
 
 import dev.kord.core.behavior.channel.GuildChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior

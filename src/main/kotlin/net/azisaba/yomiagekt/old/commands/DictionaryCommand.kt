@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.commands
+package net.azisaba.yomiagekt.old.commands
 
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
@@ -8,10 +8,10 @@ import dev.kord.rest.builder.interaction.number
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.message.embed
-import net.azisaba.yomiagekt.config.GuildsConfig
-import net.azisaba.yomiagekt.util.Util.optDouble
-import net.azisaba.yomiagekt.util.Util.optString
-import net.azisaba.yomiagekt.util.Util.optSubcommand
+import net.azisaba.yomiagekt.old.config.GuildsConfig
+import net.azisaba.yomiagekt.old.util.Util.optDouble
+import net.azisaba.yomiagekt.old.util.Util.optString
+import net.azisaba.yomiagekt.old.util.Util.optSubcommand
 import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -37,7 +37,11 @@ object DictionaryCommand : CommandHandler {
         }
     }
 
-    private suspend fun add(interaction: ApplicationCommandInteraction, before: String, after: String) {
+    private suspend fun add(
+        interaction: ApplicationCommandInteraction,
+        before: String,
+        after: String,
+    ) {
         GuildsConfig[interaction.channel.getGuildOrNull()!!.id].modifyDictionary {
             it.removeIf { pair -> pair.first == before } // remove is needed to update the order of the dictionary
             it += before to after
@@ -45,21 +49,30 @@ object DictionaryCommand : CommandHandler {
         interaction.respondPublic { content = "辞書に「$before」→「$after」を登録しました" }
     }
 
-    private suspend fun remove(interaction: ApplicationCommandInteraction, before: String) {
+    private suspend fun remove(
+        interaction: ApplicationCommandInteraction,
+        before: String,
+    ) {
         GuildsConfig[interaction.channel.getGuildOrNull()!!.id].modifyDictionary {
             it.removeIf { pair -> pair.first == before }
         }
         interaction.respondPublic { content = "辞書から「$before」を削除しました" }
     }
 
-    private suspend fun removeAt(interaction: ApplicationCommandInteraction, index: Int) {
+    private suspend fun removeAt(
+        interaction: ApplicationCommandInteraction,
+        index: Int,
+    ) {
         GuildsConfig[interaction.channel.getGuildOrNull()!!.id].modifyDictionary {
             it.removeAt(index)
         }
         interaction.respondPublic { content = "辞書から${index}個目の言葉を削除しました" }
     }
 
-    private suspend fun list(interaction: ApplicationCommandInteraction, page: Int) {
+    private suspend fun list(
+        interaction: ApplicationCommandInteraction,
+        page: Int,
+    ) {
         val dict = GuildsConfig[interaction.channel.getGuildOrNull()!!.id].dictionary
         if (dict.isEmpty()) {
             interaction.respondEphemeral { content = "辞書は空っぽです。" }

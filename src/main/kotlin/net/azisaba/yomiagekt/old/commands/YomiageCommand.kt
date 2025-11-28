@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.commands
+package net.azisaba.yomiagekt.old.commands
 
 import dev.kord.common.annotation.KordVoice
 import dev.kord.core.behavior.channel.VoiceChannelBehavior
@@ -13,14 +13,14 @@ import dev.kord.rest.builder.interaction.GlobalMultiApplicationCommandBuilder
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.voice.AudioProvider
-import net.azisaba.yomiagekt.config.UsersConfig
-import net.azisaba.yomiagekt.data.Characters
-import net.azisaba.yomiagekt.data.NsfwType
-import net.azisaba.yomiagekt.data.YomiageState
-import net.azisaba.yomiagekt.data.YomiageStateStore
-import net.azisaba.yomiagekt.util.Util
-import net.azisaba.yomiagekt.util.Util.optString
-import net.azisaba.yomiagekt.util.Util.optSubcommand
+import net.azisaba.yomiagekt.old.config.UsersConfig
+import net.azisaba.yomiagekt.old.data.Characters
+import net.azisaba.yomiagekt.old.data.NsfwType
+import net.azisaba.yomiagekt.old.data.YomiageState
+import net.azisaba.yomiagekt.old.data.YomiageStateStore
+import net.azisaba.yomiagekt.old.util.Util
+import net.azisaba.yomiagekt.old.util.Util.optString
+import net.azisaba.yomiagekt.old.util.Util.optSubcommand
 import java.util.concurrent.atomic.AtomicReference
 
 object YomiageCommand : CommandHandler {
@@ -51,11 +51,12 @@ object YomiageCommand : CommandHandler {
         if (interaction.optSubcommand("where") != null) {
             if (state != null) {
                 interaction.respondEphemeral {
-                    content = """
+                    content =
+                        """
                         下記のチャンネルで読み上げ中です。
                         テキストチャンネル: <#${state.textChannelId}>
                         ボイスチャンネル: <#${state.voiceChannelId}>
-                    """.trimIndent()
+                        """.trimIndent()
                 }
             } else {
                 interaction.respondEphemeral { content = "読み上げ中のセッションがありません。" }
@@ -65,7 +66,7 @@ object YomiageCommand : CommandHandler {
             if (state != null && state.textChannelId == interaction.channelId) {
                 interaction.respondEphemeral {
                     content = "読み上げに使用したキャラクターのクレジット表記:\n" +
-                            state.usedCharacters.joinToString("\n") { it.credit }
+                        state.usedCharacters.joinToString("\n") { it.credit }
                 }
             } else {
                 interaction.respondEphemeral { content = "読み上げ中のセッションがありません。" }
@@ -75,10 +76,15 @@ object YomiageCommand : CommandHandler {
             val actor = opt.optString("actor")!!
             val character = Characters.values().find { it.characterName == actor }
             if (character == null) {
-                val list = Characters.values().sortedWith(Comparator.comparing { t -> Util.levenshtein(actor, t.characterName.replace("（.*?）".toRegex(), "")) })
+                val list =
+                    Characters.values().sortedWith(
+                        Comparator.comparing { t ->
+                            Util.levenshtein(actor, t.characterName.replace("（.*?）".toRegex(), ""))
+                        },
+                    )
                 interaction.respondEphemeral {
                     content = "該当するキャラクターが見つかりません。以下のいずれかを選択してください。(`/yomiage voice-list`ですべての話者を表示します)\n" +
-                            list.subList(0, 7).joinToString("\n") { "`${it.characterName}`" }
+                        list.subList(0, 7).joinToString("\n") { "`${it.characterName}`" }
                 }
                 return
             }
@@ -86,30 +92,32 @@ object YomiageCommand : CommandHandler {
             userConfig.character = character
             UsersConfig.save()
             interaction.respondEphemeral {
-                content = if (state?.textChannelId == interaction.channelId && state.voiceChannelNsfw) {
-                    """
+                content =
+                    if (state?.textChannelId == interaction.channelId && state.voiceChannelNsfw) {
+                        """
                         話者を${character.characterName}に設定しました。
                         キャラクターの説明: ${character.description}
                         R18利用: ${character.nsfwType.description} ${if (character.nsfwType == NsfwType.Disallowed) "(このチャンネルでは読み上げされません)" else ""}
                         利用規約: <${character.terms}>
-                    """.trimIndent()
-                } else {
-                    """
+                        """.trimIndent()
+                    } else {
+                        """
                         話者を${character.characterName}に設定しました。
                         キャラクターの説明: ${character.description}
                         R18利用(年齢制限チャンネル以外は右の表記に関わらず:x:): ${character.nsfwType.description}
                         利用規約: <${character.terms}>
-                    """.trimIndent()
-                }
+                        """.trimIndent()
+                    }
             }
         }
         if (interaction.optSubcommand("voice-list") != null) {
             interaction.respondEphemeral {
-                content = "利用可能なキャラクター:\n" + if (state?.textChannelId == interaction.channelId && state.voiceChannelNsfw) {
-                    Characters.values().filter { it.nsfwType != NsfwType.Disallowed }.joinToString("\n") { "`${it.characterName}`" }
-                } else {
-                    Characters.values().joinToString("\n") { "`${it.characterName}`" }
-                }
+                content = "利用可能なキャラクター:\n" +
+                    if (state?.textChannelId == interaction.channelId && state.voiceChannelNsfw) {
+                        Characters.values().filter { it.nsfwType != NsfwType.Disallowed }.joinToString("\n") { "`${it.characterName}`" }
+                    } else {
+                        Characters.values().joinToString("\n") { "`${it.characterName}`" }
+                    }
             }
         }
         if (interaction.optSubcommand("skip") != null) {
@@ -123,7 +131,11 @@ object YomiageCommand : CommandHandler {
     }
 
     @OptIn(KordVoice::class)
-    private suspend fun join(interaction: ApplicationCommandInteraction, guild: Guild, member: Member) {
+    private suspend fun join(
+        interaction: ApplicationCommandInteraction,
+        guild: Guild,
+        member: Member,
+    ) {
         if (YomiageStateStore[guild.id] != null) {
             interaction.respondEphemeral { content = "別の場所で読み上げているため、参加できません。" }
             return
@@ -137,19 +149,21 @@ object YomiageCommand : CommandHandler {
         val defer = interaction.deferPublicResponse()
         try {
             val ref = AtomicReference<AudioProvider>()
-            val connection = channel.connect {
-                selfDeaf = true
+            val connection =
+                channel.connect {
+                    selfDeaf = true
 
-                audioProvider {
-                    ref.get().provide()
+                    audioProvider {
+                        ref.get().provide()
+                    }
                 }
-            }
             val nsfw = channel.data.nsfw.discordBoolean
             val state = YomiageState(guild.id, interaction.channelId, channel.id, nsfw, connection, ref)
             YomiageStateStore.put(guild.id, state)
             defer.respond {
                 if (nsfw) {
-                    content = """
+                    content =
+                        """
                         接続しました。
                         テキストチャンネル: <#${interaction.channelId}>
                         ボイスチャンネル: <#${channel.id}>
@@ -158,9 +172,10 @@ object YomiageCommand : CommandHandler {
                         :warning: R18利用が禁止されているキャラクターはメッセージの内容に関わらず読み上げされません。
                         
                         ※このBotはVOICEVOXを使用して音声を生成しています。利用規約:<https://voicevox.hiroshiba.jp/term/>
-                    """.trimIndent()
+                        """.trimIndent()
                 } else {
-                    content = """
+                    content =
+                        """
                         接続しました。
                         テキストチャンネル: <#${interaction.channelId}>
                         ボイスチャンネル: <#${channel.id}>
@@ -168,7 +183,7 @@ object YomiageCommand : CommandHandler {
                         :exclamation: 不適切と判定されたメッセージは読み上げされません。
                         
                         ※このBotはVOICEVOXを使用して音声を生成しています。利用規約:<https://voicevox.hiroshiba.jp/term/>
-                    """.trimIndent()
+                        """.trimIndent()
                 }
             }
         } catch (e: Exception) {

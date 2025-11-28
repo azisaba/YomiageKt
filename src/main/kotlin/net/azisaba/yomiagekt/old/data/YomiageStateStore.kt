@@ -1,4 +1,4 @@
-package net.azisaba.yomiagekt.data
+package net.azisaba.yomiagekt.old.data
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
@@ -20,35 +20,45 @@ object YomiageStateStore {
         AudioSourceManagers.registerLocalSource(audioPlayerManager)
     }
 
-    suspend fun DefaultAudioPlayerManager.playTrack(query: String, player: AudioPlayer): AudioTrack {
-        val track = suspendCoroutine<AudioTrack> {
-            this.loadItem(query, object : AudioLoadResultHandler {
-                override fun trackLoaded(track: AudioTrack) {
-                    it.resume(track)
-                }
+    suspend fun DefaultAudioPlayerManager.playTrack(
+        query: String,
+        player: AudioPlayer,
+    ): AudioTrack {
+        val track =
+            suspendCoroutine<AudioTrack> {
+                this.loadItem(
+                    query,
+                    object : AudioLoadResultHandler {
+                        override fun trackLoaded(track: AudioTrack) {
+                            it.resume(track)
+                        }
 
-                override fun playlistLoaded(playlist: AudioPlaylist) {
-                    it.resume(playlist.tracks.first())
-                }
+                        override fun playlistLoaded(playlist: AudioPlaylist) {
+                            it.resume(playlist.tracks.first())
+                        }
 
-                override fun noMatches() {
-                    TODO()
-                }
+                        override fun noMatches() {
+                            TODO()
+                        }
 
-                override fun loadFailed(exception: FriendlyException?) {
-                    if (exception != null) {
-                        it.resumeWithException(exception)
-                    }
-                }
-            })
-        }
+                        override fun loadFailed(exception: FriendlyException?) {
+                            if (exception != null) {
+                                it.resumeWithException(exception)
+                            }
+                        }
+                    },
+                )
+            }
 
         player.playTrack(track)
 
         return track
     }
 
-    fun put(guildId: Snowflake, state: YomiageState) {
+    fun put(
+        guildId: Snowflake,
+        state: YomiageState,
+    ) {
         if (states[guildId] != null) {
             error("state is already registered for $guildId")
         }

@@ -12,13 +12,13 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent
 import kotlinx.coroutines.flow.toList
-import net.azisaba.yomiagekt.commands.DictionaryCommand
-import net.azisaba.yomiagekt.commands.YomiageCommand
-import net.azisaba.yomiagekt.commands.YomiageModCommand
-import net.azisaba.yomiagekt.config.BotConfig
-import net.azisaba.yomiagekt.config.GuildsConfig
-import net.azisaba.yomiagekt.config.UsersConfig
-import net.azisaba.yomiagekt.data.YomiageStateStore
+import net.azisaba.yomiagekt.old.commands.DictionaryCommand
+import net.azisaba.yomiagekt.old.commands.YomiageCommand
+import net.azisaba.yomiagekt.old.commands.YomiageModCommand
+import net.azisaba.yomiagekt.old.config.BotConfig
+import net.azisaba.yomiagekt.old.config.GuildsConfig
+import net.azisaba.yomiagekt.old.config.UsersConfig
+import net.azisaba.yomiagekt.old.data.YomiageStateStore
 
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
@@ -32,11 +32,12 @@ suspend fun main() {
 
     val client = Kord(BotConfig.config.botToken)
 
-    val commands = mapOf(
-        "yomiage" to YomiageCommand,
-        "yomiage-mod" to YomiageModCommand,
-        "dict" to DictionaryCommand,
-    )
+    val commands =
+        mapOf(
+            "yomiage" to YomiageCommand,
+            "yomiage-mod" to YomiageModCommand,
+            "dict" to DictionaryCommand,
+        )
 
     client.createGlobalApplicationCommands {
         commands.values.distinct().forEach { it.register(this) }
@@ -78,17 +79,23 @@ suspend fun main() {
         }
         if (state.channelId == null) return@on
         if (YomiageStateStore[state.guildId]?.voiceChannelId == state.channelId) return@on
-        if (kord.getChannelOf<VoiceChannel>(state.channelId!!)?.voiceStates?.toList()?.size == 1) {
+        if (kord
+                .getChannelOf<VoiceChannel>(state.channelId!!)
+                ?.voiceStates
+                ?.toList()
+                ?.size == 1
+        ) {
             // handle server side "leave"
             YomiageStateStore.remove(state.guildId)?.shutdown()
         }
     }
 
     client.login {
-        this.intents = Intents(
-            Intent.GuildVoiceStates,
-            Intent.GuildMessages,
-            Intent.MessageContent,
-        )
+        this.intents =
+            Intents(
+                Intent.GuildVoiceStates,
+                Intent.GuildMessages,
+                Intent.MessageContent,
+            )
     }
 }
