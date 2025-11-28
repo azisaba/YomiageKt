@@ -8,6 +8,7 @@ import net.azisaba.yomiagekt.data.YomiageStateStore
 import net.azisaba.yomiagekt.extension.config
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.events.guild.voice.GenericGuildVoiceEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.session.ReadyEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -71,6 +72,24 @@ class YomiageBot : ListenerAdapter() {
 
         // queue message
         state.queueUserInput(message, guild, bot)
+    }
+
+    override fun onGenericGuildVoice(event: GenericGuildVoiceEvent) {
+        val state = event.voiceState
+        val channelId = state.channel?.id
+        if (channelId == null) {
+            if (state.member.id == bot.selfUser.id) {
+                // handle server side "disconnect"
+                YomiageStateStore.remove(state.guild.id)?.shutdown()
+            }
+            return
+        }
+        if (YomiageStateStore[state.guild.id]?.voiceChannelId == channelId) return
+        val voiceChannel = bot.getVoiceChannelById(channelId) ?: return
+        if (voiceChannel.members.size == 1) {
+            // handle server side "leave"
+            YomiageStateStore.remove(state.guild.id)?.shutdown()
+        }
     }
 
     companion object {
