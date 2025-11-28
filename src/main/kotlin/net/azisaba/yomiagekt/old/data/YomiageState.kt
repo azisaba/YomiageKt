@@ -5,9 +5,6 @@ import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent
 import dev.kord.common.annotation.KordVoice
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
-import dev.kord.voice.AudioFrame
-import dev.kord.voice.AudioProvider
-import dev.kord.voice.VoiceConnection
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.header
@@ -27,16 +24,14 @@ import net.azisaba.yomiagekt.old.util.OpenAIModerationAPI
 import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.atomic.AtomicReference
 
 @OptIn(KordVoice::class)
 data class YomiageState(
-    val guildId: Snowflake,
-    val textChannelId: Snowflake,
-    val voiceChannelId: Snowflake,
+    val guildId: String,
+    val textChannelId: String,
+    val voiceChannelId: String,
     val voiceChannelNsfw: Boolean,
-    val connection: VoiceConnection,
-    var audioProvider: AtomicReference<AudioProvider>,
+    val registerFunction: AudioPlayer.() -> Unit = {},
 ) {
     companion object {
         private val userMentionPattern = "<@!?(\\d+)>".toRegex()
@@ -65,11 +60,12 @@ data class YomiageState(
                 runBlocking { playNext() }
             }
         }
-        audioProvider.set(
-            AudioProvider {
-                AudioFrame.fromData(audioPlayer.provide()?.data)
-            },
-        )
+        registerFunction(audioPlayer)
+//        audioProvider.set(
+//            AudioProvider {
+//                AudioFrame.fromData(audioPlayer.provide()?.data)
+//            },
+//        )
     }
 
     suspend fun queueUserInput(message: Message) {
@@ -166,7 +162,9 @@ data class YomiageState(
 
         try {
             val encodedMessage = URLEncoder.encode(queueData.message, StandardCharsets.UTF_8)
-            val queryUrl = "${BotConfig.config.voicevoxEndpoint}/audio_query?text=$encodedMessage&speaker=${queueData.character.speakerIndex}"
+            val queryUrl =
+                @Suppress("ktlint:standard:max-line-length")
+                "${BotConfig.config.voicevoxEndpoint}/audio_query?text=$encodedMessage&speaker=${queueData.character.speakerIndex}"
             val queryJson = client.post(queryUrl).bodyAsText()
             if (queryJson.length <= 100) error("response is too short: $queryJson")
             val bytes =
@@ -196,7 +194,6 @@ data class YomiageState(
 
     suspend fun shutdown() {
         audioPlayer.destroy()
-        connection.shutdown()
     }
 
     data class QueueData(

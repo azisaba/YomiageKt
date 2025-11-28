@@ -7,14 +7,13 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import dev.kord.common.entity.Snowflake
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 object YomiageStateStore {
     val audioPlayerManager = DefaultAudioPlayerManager()
-    private val states = mutableMapOf<Snowflake, YomiageState>()
+    private val states = mutableMapOf<String, YomiageState>()
 
     init {
         AudioSourceManagers.registerLocalSource(audioPlayerManager)
@@ -55,8 +54,8 @@ object YomiageStateStore {
         return track
     }
 
-    fun put(
-        guildId: Snowflake,
+    operator fun set(
+        guildId: String,
         state: YomiageState,
     ) {
         if (states[guildId] != null) {
@@ -65,7 +64,7 @@ object YomiageStateStore {
         states[guildId] = state
     }
 
-    operator fun get(guildId: Snowflake) = states[guildId]
+    operator fun get(guildId: String) = states[guildId]
 
-    fun remove(guildId: Snowflake) = states.remove(guildId)
+    fun remove(guildId: String) = states.remove(guildId)
 }
