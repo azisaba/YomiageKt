@@ -7,6 +7,7 @@ import net.azisaba.yomiagekt.extension.respondPublic
 import net.azisaba.yomiagekt.extension.subCommand
 import net.azisaba.yomiagekt.extension.user
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -25,23 +26,26 @@ class YomiageModCommand : Command() {
             }.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VOICE_MUTE_OTHERS, Permission.MESSAGE_MANAGE))
 
     override fun onCommand(event: SlashCommandInteractionEvent) {
+        val guild = event.guild ?: return
         when (event.subcommandName) {
-            "mute" -> onMute(event)
-            "unmute" -> onUnmute(event)
-            "clear-dict" -> onClearDict(event)
+            "mute" -> onMute(guild, event)
+            "unmute" -> onUnmute(guild, event)
+            "clear-dict" -> onClearDict(guild, event)
         }
     }
 
-    fun onMute(event: SlashCommandInteractionEvent) {
+    fun onMute(
+        guild: Guild,
+        event: SlashCommandInteractionEvent,
+    ) {
         val user =
             event.optionMember("user") ?: run {
                 event.reply("ユーザーが存在しません。").queue()
                 return
             }
-        val config = event.config
 
         val responseMsg =
-            if (config.modifyMutedUsers { it.add(user.id) }) {
+            if (guild.config.modifyMutedUsers { it.add(user.id) }) {
                 "``${user.asMention}``をミュートしました"
             } else {
                 "``${user.asMention}``はすでにミュートされています"
@@ -52,16 +56,18 @@ class YomiageModCommand : Command() {
         }
     }
 
-    fun onUnmute(event: SlashCommandInteractionEvent) {
+    fun onUnmute(
+        guild: Guild,
+        event: SlashCommandInteractionEvent,
+    ) {
         val user =
             event.optionMember("user") ?: run {
                 event.reply("ユーザーが存在しません。").queue()
                 return
             }
-        val config = event.config
 
         val responseMsg =
-            if (config.modifyMutedUsers { it.remove(user.id) }) {
+            if (guild.config.modifyMutedUsers { it.remove(user.id) }) {
                 "``${user.asMention}``のミュートを解除しました"
             } else {
                 "``${user.asMention}``はミュートされていません"
@@ -72,8 +78,11 @@ class YomiageModCommand : Command() {
         }
     }
 
-    fun onClearDict(event: SlashCommandInteractionEvent) {
-        event.config.dictionary.clear()
+    fun onClearDict(
+        guild: Guild,
+        event: SlashCommandInteractionEvent,
+    ) {
+        guild.config.dictionary.clear()
         event.respondPublic("辞書をすべて削除しました")
     }
 }
