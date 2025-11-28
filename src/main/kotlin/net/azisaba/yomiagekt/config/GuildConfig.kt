@@ -1,7 +1,6 @@
 package net.azisaba.yomiagekt.config
 
 import com.charleskorn.kaml.Yaml
-import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -18,7 +17,7 @@ data class GuildsConfig(
             config =
                 File("config/guild.yml").let { file ->
                     if (!file.parentFile.exists()) file.parentFile.mkdirs()
-                    if (!file.exists()) file.writeText(Yaml.default.encodeToString(emptyMap<Snowflake, GuildConfig>()))
+                    if (!file.exists()) file.writeText(Yaml.default.encodeToString(emptyMap<String, GuildConfig>()))
                     Yaml.default.decodeFromString(file.readText())
                 }
         }
@@ -28,8 +27,6 @@ data class GuildsConfig(
         }
 
         operator fun get(guildId: String) = config.guilds.computeIfAbsent(guildId) { GuildConfig() }
-
-        operator fun get(guildId: Snowflake) = config.guilds.computeIfAbsent(guildId.toString()) { GuildConfig() }
     }
 }
 

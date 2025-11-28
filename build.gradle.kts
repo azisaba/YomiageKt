@@ -12,9 +12,9 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.kotlinxSerizliationJson)
     implementation(libs.bundles.ktor)
     implementation(libs.jda)
-    implementation(libs.bundles.kord)
     implementation(libs.slf4jSimple)
     implementation(libs.kaml)
     implementation(libs.lavaplayer)

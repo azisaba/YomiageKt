@@ -2,7 +2,6 @@ package net.azisaba.yomiagekt.data
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent
-import dev.kord.common.annotation.KordVoice
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.header
@@ -26,7 +25,6 @@ import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-@OptIn(KordVoice::class)
 data class YomiageState(
     val guildId: String,
     val textChannelId: String,
