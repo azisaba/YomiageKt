@@ -11,6 +11,8 @@ object CommandManager {
     private val commandMap: MutableMap<String, Command> = mutableMapOf()
 
     fun init() {
+        register(YomiageCommand())
+        register(YomiageModCommand())
         register(DictionaryCommand())
     }
 
