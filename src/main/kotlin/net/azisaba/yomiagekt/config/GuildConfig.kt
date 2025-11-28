@@ -9,7 +9,7 @@ import java.io.File
 
 @Serializable
 data class GuildsConfig(
-    val guilds: MutableMap<Snowflake, GuildConfig> = mutableMapOf(),
+    val guilds: MutableMap<String, GuildConfig> = mutableMapOf(),
 ) {
     companion object {
         private lateinit var config: GuildsConfig
@@ -27,16 +27,18 @@ data class GuildsConfig(
             File("config/guild.yml").writeText(Yaml.default.encodeToString(config))
         }
 
-        operator fun get(guildId: Snowflake) = config.guilds.computeIfAbsent(guildId) { GuildConfig() }
+        operator fun get(guildId: String) = config.guilds.computeIfAbsent(guildId) { GuildConfig() }
+
+        operator fun get(guildId: Snowflake) = config.guilds.computeIfAbsent(guildId.toString()) { GuildConfig() }
     }
 }
 
 @Serializable
 data class GuildConfig(
     val dictionary: MutableList<Pair<String, String>> = mutableListOf(),
-    val mutedUsers: MutableSet<Snowflake> = mutableSetOf(),
+    val mutedUsers: MutableSet<String> = mutableSetOf(),
 ) {
     fun <R> modifyDictionary(action: (MutableList<Pair<String, String>>) -> R): R = action(dictionary).apply { GuildsConfig.save() }
 
-    fun <R> modifyMutedUsers(action: (MutableSet<Snowflake>) -> R): R = action(mutedUsers).apply { GuildsConfig.save() }
+    fun <R> modifyMutedUsers(action: (MutableSet<String>) -> R): R = action(mutedUsers).apply { GuildsConfig.save() }
 }
