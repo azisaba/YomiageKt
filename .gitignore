@@ -44,3 +44,6 @@ bin/
 
 ### Others
 # *.yml
+
+### Debug files ###
+config/*.yml
