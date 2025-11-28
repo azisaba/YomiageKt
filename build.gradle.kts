@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     implementation(libs.bundles.ktor)
+    implementation(libs.jda)
     implementation(libs.bundles.kord)
     implementation(libs.slf4jSimple)
     implementation(libs.kaml)

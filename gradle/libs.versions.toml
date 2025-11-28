@@ -9,6 +9,7 @@ kord = "0.17.0"
 slf4j = "2.0.9"
 kaml = "0.70.0"
 lavaplayer = "2.2.4"
+jda = "6.1.2"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -24,6 +25,7 @@ kordVoice = { module = "dev.kord:kord-voice", version.ref = "kord" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml" }
 lavaplayer = { module = "dev.arbjerg:lavaplayer", version.ref = "lavaplayer" }
+jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 
 [bundles]
 ktor = [
