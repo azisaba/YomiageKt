@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - jda
   pull_request:
     branches:
       - main
+      - jda
   workflow_dispatch:
 
 concurrency:
