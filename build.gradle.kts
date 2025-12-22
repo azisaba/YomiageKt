@@ -29,5 +29,6 @@ tasks {
         manifest {
             attributes("Main-Class" to "net.azisaba.yomiagekt.MainKt")
         }
+        archiveFileName.set("YomiageKt.jar")
     }
 }
