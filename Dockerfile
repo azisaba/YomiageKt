@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jre AS builder
+FROM eclipse-temurin:25-jdk AS builder
 WORKDIR /app
 COPY . .
 RUN ./gradlew shadowJar --no-daemon
