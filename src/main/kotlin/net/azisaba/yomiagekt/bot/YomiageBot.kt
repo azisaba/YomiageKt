@@ -25,7 +25,7 @@ class YomiageBot : ListenerAdapter() {
 
     fun main() {
         // Load config
-        BotConfig
+        BotConfig.init()
         GuildsConfig.load()
         UsersConfig.load()
         logger.info("Config loaded!")
