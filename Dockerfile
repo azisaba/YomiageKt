@@ -1,9 +1,9 @@
-FROM gradle:jdk21 AS builder
+FROM eclipse-temurin:25-jre AS builder
 WORKDIR /app
 COPY . .
-RUN gradle shadowJar --no-daemon
+RUN ./gradlew shadowJar --no-daemon
 
-FROM eclipse-temurin:21-jre AS runner
+FROM eclipse-temurin:25-jre AS runner
 WORKDIR /app
 COPY --from=builder /app/build/libs/YomiageKt.jar .
 ENTRYPOINT [ "java", "-jar", "YomiageKt.jar"]
