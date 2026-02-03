@@ -1,5 +1,6 @@
 package net.azisaba.yomiagekt.bot
 
+import club.minnced.discord.jdave.interop.JDaveSessionFactory
 import net.azisaba.yomiagekt.command.CommandManager
 import net.azisaba.yomiagekt.config.BotConfig
 import net.azisaba.yomiagekt.config.GuildsConfig
@@ -8,6 +9,7 @@ import net.azisaba.yomiagekt.data.YomiageStateStore
 import net.azisaba.yomiagekt.extension.config
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.audio.AudioModuleConfig
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -23,7 +25,7 @@ class YomiageBot : ListenerAdapter() {
 
     fun main() {
         // Load config
-        BotConfig
+        BotConfig.init()
         GuildsConfig.load()
         UsersConfig.load()
         logger.info("Config loaded!")
@@ -39,6 +41,7 @@ class YomiageBot : ListenerAdapter() {
                         GatewayIntent.MESSAGE_CONTENT,
                     ),
                 ).addEventListeners(this)
+                .setAudioModuleConfig(AudioModuleConfig().withDaveSessionFactory(JDaveSessionFactory()))
                 .build()
 
         // init and register slash commands

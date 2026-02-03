@@ -1,16 +1,16 @@
 [versions]
 # plugin
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 shadow = "9.2.2"
 
 # library
 kotlinxSerizliationJson = "1.9.0"
 ktor = "3.0.3"
-kord = "0.17.0"
 slf4j = "2.0.9"
 kaml = "0.70.0"
 lavaplayer = "2.2.4"
-jda = "6.1.2"
+jda = "6.3.0"
+jdave = "0.1.5"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -21,13 +21,15 @@ shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 kotlinxSerizliationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerizliationJson"}
 ktorClientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktorClientCIO = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
-kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }
-kordCoreVoice = { module = "dev.kord:kord-core-voice", version.ref = "kord" }
-kordVoice = { module = "dev.kord:kord-voice", version.ref = "kord" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml" }
 lavaplayer = { module = "dev.arbjerg:lavaplayer", version.ref = "lavaplayer" }
 jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
+jdave-api = { module = "club.minnced:jdave-api", version.ref = "jdave" }
+jdave-linux-x86 = { module = "club.minnced:jdave-native-linux-x86-64", version.ref = "jdave" }
+jdave-linux-aarch64 = { module = "club.minnced:jdave-native-linux-aarch64", version.ref = "jdave" }
+jdave-win-x86 = { module = "club.minnced:jdave-native-win-x86-64", version.ref = "jdave" }
+jdave-darwin = { module = "club.minnced:jdave-native-darwin", version.ref = "jdave" }
 
 [bundles]
 ktor = [
@@ -35,9 +37,10 @@ ktor = [
     "ktorClientCIO"
 ]
 
-kord = [
-    "kordCore",
-    "kordCoreVoice",
-    "kordVoice"
+jdave = [
+    "jdave-api",
+    "jdave-linux-x86",
+    "jdave-linux-aarch64",
+    "jdave-win-x86",
+    "jdave-darwin"
 ]
-

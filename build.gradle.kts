@@ -18,16 +18,21 @@ dependencies {
     implementation(libs.slf4jSimple)
     implementation(libs.kaml)
     implementation(libs.lavaplayer)
+    implementation(libs.bundles.jdave)
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 tasks {
     shadowJar {
         manifest {
-            attributes("Main-Class" to "net.azisaba.yomiagekt.MainKt")
+            attributes(
+                "Main-Class" to "net.azisaba.yomiagekt.MainKt",
+                // From https://github.com/MinnDevelopment/jdave?tab=readme-ov-file#restricted-methods-warning
+                "Enable-Native-Access" to "ALL-UNNAMED",
+            )
         }
         archiveFileName.set("YomiageKt.jar")
     }

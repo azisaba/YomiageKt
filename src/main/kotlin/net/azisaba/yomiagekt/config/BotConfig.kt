@@ -28,7 +28,7 @@ data class BotConfig(
                 yaml.decodeFromString(serializer(), file.readText())
             }
 
-        init {
+        fun init() {
             config.voicevoxEndpoint = config.voicevoxEndpoint.trimEnd('/')
 
             if (config.overwrite) {
