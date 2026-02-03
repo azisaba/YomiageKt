@@ -1,6 +1,6 @@
 [versions]
 # plugin
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 shadow = "9.2.2"
 
 # library
@@ -9,7 +9,7 @@ ktor = "3.0.3"
 slf4j = "2.0.9"
 kaml = "0.70.0"
 lavaplayer = "2.2.4"
-jda = "6.1.2"
+jda = "6.3.0"
 jdave = "0.1.5"
 
 [plugins]

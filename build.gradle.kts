@@ -28,7 +28,11 @@ kotlin {
 tasks {
     shadowJar {
         manifest {
-            attributes("Main-Class" to "net.azisaba.yomiagekt.MainKt")
+            attributes(
+                "Main-Class" to "net.azisaba.yomiagekt.MainKt",
+                // From https://github.com/MinnDevelopment/jdave?tab=readme-ov-file#restricted-methods-warning
+                "Enable-Native-Access" to "ALL-UNNAMED",
+            )
         }
         archiveFileName.set("YomiageKt.jar")
     }
