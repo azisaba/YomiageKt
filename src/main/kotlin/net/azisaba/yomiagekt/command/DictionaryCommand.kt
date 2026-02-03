@@ -91,23 +91,31 @@ class DictionaryCommand : Command() {
         member: Member,
         event: SlashCommandInteractionEvent,
     ) {
-        val page = event.optionDouble("page")?.toInt() ?: 1
         val dict = guild.config.dictionary
         if (dict.isEmpty()) {
-            event.respondEphemeral("辞書は空っぽです。")
+            event.respondEphemeral("このギルドの辞書は空っぽです。何か追加してみませんか?")
             return
         }
-        val maxPage = ceil(dict.size / 30.0).toInt()
-        val actualPage = min(maxPage, page)
-        var index = 0
-        val minIndex = (actualPage - 1) * 30
-        val maxIndex = actualPage * 30
-        var content = ""
-        dict.forEach { (before, after) ->
-            if (index !in minIndex..maxIndex) return@forEach
-            content += "$index: `$before` → `$after`\n"
-            index++
+
+        val maxPage = ceil(dict.size.div(LINE_PER_PAGE.toDouble())).toInt()
+
+        val page = event.optionDouble("page")?.toInt() ?: 1
+        require(page in 1..maxPage) {
+            event.respondEphemeral("現在、辞書は${maxPage}ページまでしかありません。超えない範囲のページ番号を入力してください。")
+            return
         }
+
+        // calc index
+        val actualPage = min(maxPage, page) - 1 // For adjust 0-indexed list
+        val minIndex = actualPage * LINE_PER_PAGE
+        val maxIndex = (actualPage + 1) * LINE_PER_PAGE
+
+        // get sub list and join to string
+        val extractedDict = dict.subList(minIndex, min(maxIndex, dict.size))
+        val content =
+            extractedDict
+                .mapIndexed { index, pair -> "${minIndex + index + 1}: `${pair.first}` → `${pair.second}`" }
+                .joinToString("\n")
 
         // send response embed
         event
@@ -115,5 +123,9 @@ class DictionaryCommand : Command() {
             .setEmbeds(
                 EmbedBuilder().setDescription(content).build(),
             ).queue()
+    }
+
+    companion object {
+        const val LINE_PER_PAGE: Int = 30
     }
 }
