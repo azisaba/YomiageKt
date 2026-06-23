@@ -6,11 +6,13 @@ import net.azisaba.yomiagekt.data.Characters
 import net.azisaba.yomiagekt.data.NsfwType
 import net.azisaba.yomiagekt.data.YomiageState
 import net.azisaba.yomiagekt.data.YomiageStateStore
+import net.azisaba.yomiagekt.extension.optionBoolean
 import net.azisaba.yomiagekt.extension.config
 import net.azisaba.yomiagekt.extension.optionString
 import net.azisaba.yomiagekt.extension.respond
 import net.azisaba.yomiagekt.extension.respondEphemeral
 import net.azisaba.yomiagekt.extension.respondPublic
+import net.azisaba.yomiagekt.extension.bool
 import net.azisaba.yomiagekt.extension.string
 import net.azisaba.yomiagekt.extension.subCommand
 import net.azisaba.yomiagekt.util.Util
@@ -33,6 +35,9 @@ class YomiageCommand : Command() {
                 }
                 subCommand("voice-list", "利用可能な話し手を表示します")
                 subCommand("skip", "現在再生してる読み上げをスキップします")
+                subCommand("otoware", "自分の読み上げを音割れさせるか設定します") {
+                    bool("enabled", "音割れを有効にするか")
+                }
             }
 
     override fun onCommand(event: SlashCommandInteractionEvent) {
@@ -46,6 +51,7 @@ class YomiageCommand : Command() {
             "set-voice" -> setVoice(guild, member, event)
             "voice-list" -> voiceList(guild, member, event)
             "skip" -> skip(guild, member, event)
+            "otoware" -> otoware(guild, member, event)
         }
     }
 
@@ -268,6 +274,30 @@ class YomiageCommand : Command() {
         } else {
             event.respondEphemeral("読み上げ中のセッションがありません。")
         }
+    }
+
+    fun otoware(
+        guild: Guild,
+        member: Member,
+        event: SlashCommandInteractionEvent,
+    ) {
+        val requested = event.optionBoolean("enabled")
+        val nextValue = requested ?: !member.config.otoware
+        if (nextValue && guild.config.noOtoware) {
+            event.respondEphemeral("このサーバーでは音割れ設定が禁止されています。")
+            return
+        }
+
+        member.config.otoware = nextValue
+        UsersConfig.save()
+
+        val response =
+            if (nextValue) {
+                "あなたの読み上げを音割れさせる設定を有効にしました。"
+            } else {
+                "あなたの読み上げを通常音声に戻しました。"
+            }
+        event.respondEphemeral(response)
     }
 
     companion object {

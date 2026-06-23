@@ -34,8 +34,11 @@ data class GuildsConfig(
 data class GuildConfig(
     val dictionary: MutableList<Pair<String, String>> = mutableListOf(),
     val mutedUsers: MutableSet<String> = mutableSetOf(),
+    var noOtoware: Boolean = true,
 ) {
     fun <R> modifyDictionary(action: (MutableList<Pair<String, String>>) -> R): R = action(dictionary).apply { GuildsConfig.save() }
 
     fun <R> modifyMutedUsers(action: (MutableSet<String>) -> R): R = action(mutedUsers).apply { GuildsConfig.save() }
+
+    fun <R> modify(action: (GuildConfig) -> R): R = action(this).apply { GuildsConfig.save() }
 }

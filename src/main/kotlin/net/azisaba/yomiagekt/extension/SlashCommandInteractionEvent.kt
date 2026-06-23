@@ -20,6 +20,11 @@ fun SlashCommandInteractionEvent.optionString(name: String): String? = getOption
 fun SlashCommandInteractionEvent.optionDouble(name: String): Double? = getOption(name)?.asDouble
 
 /**
+ * Get option as boolean
+ */
+fun SlashCommandInteractionEvent.optionBoolean(name: String): Boolean? = getOption(name)?.asBoolean
+
+/**
  * Make request for ephemeral response
  * CAUTION: no .queue() required for this function
  */

@@ -1,6 +1,8 @@
 package net.azisaba.yomiagekt.command
 
+import net.azisaba.yomiagekt.extension.bool
 import net.azisaba.yomiagekt.extension.config
+import net.azisaba.yomiagekt.extension.optionBoolean
 import net.azisaba.yomiagekt.extension.optionMember
 import net.azisaba.yomiagekt.extension.respondEphemeral
 import net.azisaba.yomiagekt.extension.respondPublic
@@ -23,6 +25,9 @@ class YomiageModCommand : Command() {
                     user("user", "ユーザー", true)
                 }
                 subCommand("clear-dict", "辞書をすべて削除します")
+                subCommand("no-otoware", "このサーバーで音割れ設定を禁止するか変更します") {
+                    bool("enabled", "音割れ設定を禁止するか")
+                }
             }.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VOICE_MUTE_OTHERS, Permission.MESSAGE_MANAGE))
 
     override fun onCommand(event: SlashCommandInteractionEvent) {
@@ -31,6 +36,7 @@ class YomiageModCommand : Command() {
             "mute" -> onMute(guild, event)
             "unmute" -> onUnmute(guild, event)
             "clear-dict" -> onClearDict(guild, event)
+            "no-otoware" -> onNoOtoware(guild, event)
         }
     }
 
@@ -82,7 +88,28 @@ class YomiageModCommand : Command() {
         guild: Guild,
         event: SlashCommandInteractionEvent,
     ) {
-        guild.config.dictionary.clear()
+        guild.config.modify {
+            it.dictionary.clear()
+        }
         event.respondPublic("辞書をすべて削除しました")
+    }
+
+    fun onNoOtoware(
+        guild: Guild,
+        event: SlashCommandInteractionEvent,
+    ) {
+        val requested = event.optionBoolean("enabled")
+        val nextValue = requested ?: !guild.config.noOtoware
+        guild.config.modify {
+            it.noOtoware = nextValue
+        }
+
+        val response =
+            if (nextValue) {
+                "このサーバーでは音割れ設定を禁止しました。既存の個人設定は保持されますが、読み上げ時には無効化されます。"
+            } else {
+                "このサーバーでの音割れ設定の禁止を解除しました。"
+            }
+        event.respondEphemeral(response)
     }
 }

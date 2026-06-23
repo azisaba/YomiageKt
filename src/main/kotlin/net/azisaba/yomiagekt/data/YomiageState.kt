@@ -17,6 +17,7 @@ import net.azisaba.yomiagekt.config.BotConfig
 import net.azisaba.yomiagekt.config.GuildsConfig
 import net.azisaba.yomiagekt.config.UsersConfig
 import net.azisaba.yomiagekt.data.YomiageStateStore.playTrack
+import net.azisaba.yomiagekt.util.FfmpegUtil
 import net.azisaba.yomiagekt.util.OpenAIModerationAPI
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
@@ -110,7 +111,9 @@ data class YomiageState(
         currentMessage = currentMessage.replace("\\|\\|.+?\\|\\|".toRegex(), "")
         currentMessage = currentMessage.replace(urlPattern, "")
 
-        GuildsConfig[message.getGuild().id].dictionary.forEach { (key, value) ->
+        val guildConfig = GuildsConfig[message.getGuild().id]
+
+        guildConfig.dictionary.forEach { (key, value) ->
             currentMessage = currentMessage.replace(key, value)
         }
 
@@ -132,7 +135,7 @@ data class YomiageState(
             return
         }
 
-        queue(QueueData(currentMessage, userConfig.character))
+        queue(QueueData(currentMessage, userConfig.character, userConfig.otoware && !guildConfig.noOtoware))
     }
 
     private fun queue(queueData: QueueData) {
@@ -175,13 +178,26 @@ data class YomiageState(
                         header("Content-Type", "application/json")
                     }.bodyAsChannel()
                     .toByteArray()
-            val file =
+            val synthesizedFile =
                 withContext(Dispatchers.IO) {
                     File.createTempFile("yomiagekt", ".wav")
                 }
-            file.writeBytes(bytes)
-            YomiageStateStore.audioPlayerManager.playTrack(file.absolutePath, audioPlayer)
-            previousFile = file
+            synthesizedFile.writeBytes(bytes)
+            val playbackFile =
+                if (queueData.otoware) {
+                    try {
+                        FfmpegUtil.createOtowareFile(synthesizedFile).also {
+                            if (it != synthesizedFile) synthesizedFile.delete()
+                        }
+                    } catch (e: Exception) {
+                        logger.warn("Failed to apply otoware filter, fallback to original audio.", e)
+                        synthesizedFile
+                    }
+                } else {
+                    synthesizedFile
+                }
+            YomiageStateStore.audioPlayerManager.playTrack(playbackFile.absolutePath, audioPlayer)
+            previousFile = playbackFile
         } catch (e: Exception) {
             println("Error consuming queue")
             e.printStackTrace()
@@ -200,5 +216,6 @@ data class YomiageState(
     data class QueueData(
         val message: String,
         val character: Characters,
+        val otoware: Boolean,
     )
 }

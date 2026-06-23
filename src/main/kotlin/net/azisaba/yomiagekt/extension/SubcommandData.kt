@@ -32,3 +32,11 @@ fun SubcommandData.user(
 ) {
     addOption(OptionType.USER, name, description, required)
 }
+
+fun SubcommandData.bool(
+    name: String,
+    description: String,
+    required: Boolean = false,
+) {
+    addOption(OptionType.BOOLEAN, name, description, required)
+}

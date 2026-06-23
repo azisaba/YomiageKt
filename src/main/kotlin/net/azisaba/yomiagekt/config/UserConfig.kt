@@ -34,4 +34,5 @@ data class UsersConfig(
 @Serializable
 data class UserConfig(
     var character: Characters = Characters.ZUNDA_N,
+    var otoware: Boolean = false,
 )
